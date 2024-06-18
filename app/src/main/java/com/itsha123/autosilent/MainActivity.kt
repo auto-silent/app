@@ -31,6 +31,11 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.itsha123.autosilent.ui.theme.AutoSilentTheme
+import com.opencsv.CSVReader
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.io.IOException
+import java.io.StringReader
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.pow
@@ -38,7 +43,8 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 private lateinit var fusedLocationClient: FusedLocationProviderClient
-
+data class LocationData(val latitude: Double, val longitude: Double, val radius: Double)
+private var locationData: LocationData? = null
 class MainActivity : ComponentActivity() {
     @Composable
     fun MainScreen() {
@@ -75,13 +81,19 @@ class MainActivity : ComponentActivity() {
                                 null
                             )
                                 .addOnSuccessListener { location: Location? ->
-                                    geofence.value = isUserInGeofence(
-                                        location!!.latitude,
-                                        location.longitude,
-                                        REDACTED,
-                                        REDACTED,
-                                        50.0
-                                    )
+                                    val latitude = location!!.latitude.toInt()
+                                    val longitude = location.longitude.toInt()
+
+                                    fetchLocationFromInternet(latitude, longitude)
+                                    geofence.value = locationData?.let {
+                                        isUserInGeofence(
+                                            location.latitude,
+                                            location.longitude,
+                                            it.latitude,
+                                            it.longitude,
+                                            it.radius
+                                        )
+                                    } == true
                                     Log.i("Location", "location updated")
 
                                     if (geofence.value) {
@@ -104,6 +116,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -121,9 +134,35 @@ class MainActivity : ComponentActivity() {
 
             }
         }
+    }
+}
+
+
+fun fetchLocationFromInternet(userLat: Int, userLong: Int) {
+    val client = OkHttpClient()
+    val request = Request.Builder()
+        .url("https://raw.githubusercontent.com/itsha123/Auto-Silent-Database/main/$userLat%2C%20$userLong.csv")
+        .build()
+Log.i("Internet", "Fetching location data")
+    client.newCall(request).enqueue(object : okhttp3.Callback {
+        override fun onFailure(call: okhttp3.Call, e: IOException) {
+            Log.e("Internet", "Failed to fetch location data", e)
+        }
+
+        override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
+            response.use {
+                if (!response.isSuccessful) throw IOException("Unexpected code $response")
+
+                val csvReader = CSVReader(StringReader(response.body?.string()))
+                val nextLine = csvReader.readNext()
+                if (nextLine != null) {
+                    locationData = LocationData(nextLine[0].toDouble(), nextLine[1].toDouble(), nextLine[2].toDouble())
+                    // Use locationData.latitude, locationData.longitude and locationData.radius in your application
                 }
             }
-
+        }
+    })
+}
 fun isUserInGeofence(
     userLat: Double,
     userLng: Double,
@@ -131,6 +170,7 @@ fun isUserInGeofence(
     geofenceLng: Double,
     geofenceRadius: Double
 ): Boolean {
+    Log.i("geofenceEvent", "userLat: $userLat, userLng: $userLng, geofenceLat: $geofenceLat, geofenceLng: $geofenceLng, geofenceRadius: $geofenceRadius")
     val earthRadius = 6371
 
     val latDistance = Math.toRadians(geofenceLat - userLat)
