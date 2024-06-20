@@ -32,6 +32,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.itsha123.autosilent.ui.theme.AutoSilentTheme
 import com.opencsv.CSVReader
+import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
@@ -43,9 +44,27 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 private lateinit var fusedLocationClient: FusedLocationProviderClient
-data class LocationData(val latitude: Double, val longitude: Double, val radius: Double)
+
+data class LocationData(
+    val name: String,
+    val address: String,
+    val latitude: Double,
+    val longitude: Double,
+    val radius: Double
+)
+
+data class GeofenceData(
+    val name: String?,
+    val address: String?,
+    val inGeofence: Boolean
+)
+
 private var locationData: LocationData? = null
+
+private var geofenceData: GeofenceData? = null
+
 class MainActivity : ComponentActivity() {
+    @OptIn(DelicateCoroutinesApi::class)
     @Composable
     fun MainScreen() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
@@ -81,25 +100,19 @@ class MainActivity : ComponentActivity() {
                                 null
                             )
                                 .addOnSuccessListener { location: Location? ->
-                                    val latitude = location!!.latitude.toInt()
-                                    val longitude = location.longitude.toInt()
-
-                                    fetchLocationFromInternet(latitude, longitude)
-                                    geofence.value = locationData?.let {
-                                        isUserInGeofence(
-                                            location.latitude,
-                                            location.longitude,
-                                            it.latitude,
-                                            it.longitude,
-                                            it.radius
-                                        )
-                                    } == true
-                                    Log.i("Location", "location updated")
-
-                                    if (geofence.value) {
-                                        audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
-                                    } else {
-                                        audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
+                                    if (location != null) {
+                                        GlobalScope.launch(Dispatchers.IO) {
+                                            geofenceData = fetchLocationFromInternet(location.latitude, location.longitude)
+                                            withContext(Dispatchers.Main) {
+                                                Log.i("Location", "location updated")
+                                                geofence.value = geofenceData!!.inGeofence
+                                                if (geofence.value) {
+                                                    audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+                                                } else {
+                                                    audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                         }
@@ -138,31 +151,55 @@ class MainActivity : ComponentActivity() {
 }
 
 
-fun fetchLocationFromInternet(userLat: Int, userLong: Int) {
+fun fetchLocationFromInternet(userLat: Double, userLong: Double): GeofenceData? {
+    var geofence = false
     val client = OkHttpClient()
     val request = Request.Builder()
-        .url("https://raw.githubusercontent.com/itsha123/Auto-Silent-Database/main/$userLat%2C%20$userLong.csv")
+        .url("https://raw.githubusercontent.com/itsha123/Auto-Silent-Database/main/${userLat.toInt()}%2C%20${userLong.toInt()}.csv")
         .build()
-Log.i("Internet", "Fetching location data")
-    client.newCall(request).enqueue(object : okhttp3.Callback {
-        override fun onFailure(call: okhttp3.Call, e: IOException) {
-            Log.e("Internet", "Failed to fetch location data", e)
+    Log.i("Internet", "Fetching location data")
+    try {
+        val response = client.newCall(request).execute()
+        if (!response.isSuccessful) throw IOException("Unexpected code $response")
+        var nextLine: Array<String>?
+        val csvReader = CSVReader(StringReader(response.body?.string()))
+        while (csvReader.readNext().also { nextLine = it } != null && !geofence) {
+            locationData = LocationData(
+                nextLine!![n(1)],
+                nextLine!![n(2)],
+                nextLine!![n(3)].toDouble(),
+                nextLine!![n(4)].toDouble(),
+                nextLine!![n(5)].toDouble()
+            )
+            geofence = isUserInGeofence(
+                userLat,
+                userLong,
+                locationData!!.latitude,
+                locationData!!.longitude,
+                locationData!!.radius
+            )
         }
-
-        override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
-            response.use {
-                if (!response.isSuccessful) throw IOException("Unexpected code $response")
-
-                val csvReader = CSVReader(StringReader(response.body?.string()))
-                val nextLine = csvReader.readNext()
-                if (nextLine != null) {
-                    locationData = LocationData(nextLine[0].toDouble(), nextLine[1].toDouble(), nextLine[2].toDouble())
-                    // Use locationData.latitude, locationData.longitude and locationData.radius in your application
-                }
-            }
-        }
-    })
+    } catch (e: IOException) {
+        Log.e("Internet", "Failed to fetch location data", e)
+    }
+    Log.i("geofenceEvent", geofence.toString())
+    geofenceData = if (geofence) {
+        GeofenceData(
+            locationData!!.name,
+            locationData!!.address,
+            true
+        )
+    } else {
+        GeofenceData(
+            null,
+            null,
+            false
+        )
+    }
+    Log.i("geofenceEvent", geofenceData.toString())
+    return geofenceData
 }
+
 fun isUserInGeofence(
     userLat: Double,
     userLng: Double,
@@ -170,7 +207,10 @@ fun isUserInGeofence(
     geofenceLng: Double,
     geofenceRadius: Double
 ): Boolean {
-    Log.i("geofenceEvent", "userLat: $userLat, userLng: $userLng, geofenceLat: $geofenceLat, geofenceLng: $geofenceLng, geofenceRadius: $geofenceRadius")
+    Log.i(
+        "geofenceEvent",
+        "userLat: $userLat, userLng: $userLng, geofenceLat: $geofenceLat, geofenceLng: $geofenceLng, geofenceRadius: $geofenceRadius"
+    )
     val earthRadius = 6371
 
     val latDistance = Math.toRadians(geofenceLat - userLat)
@@ -187,6 +227,12 @@ fun isUserInGeofence(
     val geofenceRadiusInKm = geofenceRadius / 1000
 
     return distance <= geofenceRadiusInKm
+}
+
+fun n(n: Int): Int {
+    //Function that converts regular counting to computer counting for sanity
+    val rn = n - 1
+    return rn
 }
 
 @Composable
@@ -218,4 +264,3 @@ fun GreetingPreview() {
         UI({}, "preview")
     }
 }
-//Add help message
