@@ -24,19 +24,16 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startActivity
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -50,6 +47,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.io.File
 import java.io.IOException
 import java.io.StringReader
 import kotlin.math.atan2
@@ -119,7 +117,7 @@ class MainActivity : ComponentActivity() {
                                     if (location != null) {
                                         GlobalScope.launch(Dispatchers.IO) {
                                             geofenceData = fetchLocationFromInternet(
-                                                location.latitude, location.longitude
+                                                location.latitude, location.longitude, this@MainActivity
                                             )
                                             withContext(Dispatchers.Main) {
                                                 Log.i("Location", "location updated")
@@ -181,18 +179,20 @@ class MainActivity : ComponentActivity() {
 }
 
 
-fun fetchLocationFromInternet(userLat: Double, userLong: Double): GeofenceData? {
+fun fetchLocationFromInternet(userLat: Double, userLong: Double, context: Context): GeofenceData? {
     var geofence = false
-    val client = OkHttpClient()
-    val request = Request.Builder()
-        .url("https://raw.githubusercontent.com/itsha123/Auto-Silent-Database/main/${userLat.toInt()}%2C%20${userLong.toInt()}.csv")
-        .build()
-    Log.i("Internet", "Fetching location data")
-    try {
-        val response = client.newCall(request).execute()
-        if (!response.isSuccessful) throw IOException("Unexpected code $response")
+    val filename = "${userLat.toInt()}%2C%20${userLong.toInt()}.csv"
+    val file = File(context.filesDir, filename)
+    val data: String
+    if (file.exists()) {
+        Log.i("Internet", "Reading location data from file")
+        val inputStream = context.openFileInput(filename)
+
+        // Read the data from the file
+        data = inputStream.bufferedReader().use { it.readText() }
+
         var nextLine: Array<String>?
-        val csvReader = CSVReader(StringReader(response.body?.string()))
+        val csvReader = CSVReader(StringReader(data))
         while (csvReader.readNext().also { nextLine = it } != null && !geofence) {
             locationData = LocationData(
                 nextLine!![n(1)],
@@ -209,8 +209,51 @@ fun fetchLocationFromInternet(userLat: Double, userLong: Double): GeofenceData? 
                 locationData!!.radius
             )
         }
-    } catch (e: IOException) {
-        Log.e("Internet", "Failed to fetch location data", e)
+
+        // Close the input stream
+        inputStream.close()
+    } else {
+        Log.i("Internet", "Fetching location data")
+        val client = OkHttpClient()
+        val request = Request.Builder()
+            .url("https://raw.githubusercontent.com/itsha123/Auto-Silent-Database/main/${userLat.toInt()}%2C%20${userLong.toInt()}.csv")
+            .build()
+        Log.i("Internet", "Fetching location data")
+        try {
+            val response = client.newCall(request).execute()
+            if (!response.isSuccessful) throw IOException("Unexpected code $response")
+            val s = response.body?.string()
+            // Open file output stream
+            val outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE)
+
+            // Write the data to the file
+            if (s != null) {
+                outputStream.write(s.toByteArray())
+            }
+
+            // Close the output stream
+            outputStream.close()
+            var nextLine: Array<String>?
+            val csvReader = CSVReader(StringReader(s))
+            while (csvReader.readNext().also { nextLine = it } != null && !geofence) {
+                locationData = LocationData(
+                    nextLine!![n(1)],
+                    nextLine!![n(2)],
+                    nextLine!![n(3)].toDouble(),
+                    nextLine!![n(4)].toDouble(),
+                    nextLine!![n(5)].toDouble()
+                )
+                geofence = isUserInGeofence(
+                    userLat,
+                    userLong,
+                    locationData!!.latitude,
+                    locationData!!.longitude,
+                    locationData!!.radius
+                )
+            }
+        } catch (e: IOException) {
+            Log.e("Internet", "Failed to fetch location data", e)
+        }
     }
     Log.i("geofenceEvent", geofence.toString())
     geofenceData = if (geofence) {
