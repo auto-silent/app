@@ -15,13 +15,17 @@ import androidx.compose.ui.unit.dp
 import com.itsha123.autosilent.ui.theme.AutoSilentTheme
 
 @Composable
-fun LocationPermissionRequestScreen(onRequestPermission: () -> Unit) {
+fun NotificationsPermissionRequestScreen(onRequestPermission: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Please grant Precise Location permission to the app, it is required for the app's core functionality.", modifier = Modifier.padding(16.dp), textAlign = TextAlign.Center)
+        Text(
+            "Please grant Notifications permission to the app, it is required to make the app work in the background.",
+            modifier = Modifier.padding(16.dp),
+            textAlign = TextAlign.Center
+        )
         Button(onClick = {
             onRequestPermission()
         }) {
@@ -32,8 +36,8 @@ fun LocationPermissionRequestScreen(onRequestPermission: () -> Unit) {
 
 @Preview(showBackground = true)
 @Composable
-fun PermissionPreviewLocation() {
+fun PermissionPreviewNotifications() {
     AutoSilentTheme {
-        LocationPermissionRequestScreen {}
+        NotificationsPermissionRequestScreen {}
     }
 }

@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.play.services.location)
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
     implementation("com.opencsv:opencsv:5.5.2")
+    implementation(libs.androidx.work.runtime.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

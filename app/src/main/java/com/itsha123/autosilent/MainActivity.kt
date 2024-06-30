@@ -1,6 +1,7 @@
 package com.itsha123.autosilent
 
 import android.Manifest
+import android.app.ActivityManager
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
@@ -25,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -43,6 +45,7 @@ import com.opencsv.CSVReader
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -55,7 +58,6 @@ import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
-
 
 private lateinit var fusedLocationClient: FusedLocationProviderClient
 
@@ -74,12 +76,22 @@ data class GeofenceData(
 private var locationData: LocationData? = null
 
 private var geofenceData: GeofenceData? = null
+var geofence = MutableStateFlow(false)
+var buttonText = MutableStateFlow("Disable Auto Silent")
 
 class MainActivity : ComponentActivity() {
     @OptIn(DelicateCoroutinesApi::class)
     @Composable
     fun MainScreen() {
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        if (ActivityCompat.checkSelfPermission(
+                this@MainActivity, Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                this.revokeSelfPermissionOnKill(Manifest.permission.ACCESS_FINE_LOCATION)
+                this.revokeSelfPermissionOnKill(Manifest.permission.ACCESS_COARSE_LOCATION)
+            }
+        }
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -91,8 +103,6 @@ class MainActivity : ComponentActivity() {
                     }
                 } else if (ActivityCompat.checkSelfPermission(
                         this@MainActivity, Manifest.permission.ACCESS_FINE_LOCATION
-                    ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                        this@MainActivity, Manifest.permission.ACCESS_COARSE_LOCATION
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
                     LocationPermissionRequestScreen {
@@ -100,58 +110,52 @@ class MainActivity : ComponentActivity() {
                             this@MainActivity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1
                         )
                     }
-                } else {
-                    val geofence = remember { mutableStateOf(false) }
-
-                    fun fetchLocation() {
-                        if (ActivityCompat.checkSelfPermission(
-                                this@MainActivity, Manifest.permission.ACCESS_FINE_LOCATION
-                            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                                this@MainActivity, Manifest.permission.ACCESS_COARSE_LOCATION
-                            ) != PackageManager.PERMISSION_GRANTED
-                        ) {
-                        } else {
-                            fusedLocationClient.getCurrentLocation(
-                                Priority.PRIORITY_HIGH_ACCURACY, null
-                            ).addOnSuccessListener { location: Location? ->
-                                    if (location != null) {
-                                        GlobalScope.launch(Dispatchers.IO) {
-                                            geofenceData = fetchLocationFromInternet(
-                                                location.latitude, location.longitude, this@MainActivity
-                                            )
-                                            withContext(Dispatchers.Main) {
-                                                Log.i("Location", "location updated")
-                                                geofence.value = geofenceData!!.inGeofence
-                                                if (geofence.value) {
-                                                    audioManager.ringerMode =
-                                                        AudioManager.RINGER_MODE_SILENT
-                                                } else {
-                                                    audioManager.ringerMode =
-                                                        AudioManager.RINGER_MODE_NORMAL
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
+                } else if (ActivityCompat.checkSelfPermission(
+                        this@MainActivity, Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    BackgroundLocationPermissionRequestScreen {
+                        ActivityCompat.requestPermissions(
+                            this@MainActivity,
+                            arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
+                            1
+                        )
+                    }
+                } else if (ActivityCompat.checkSelfPermission(
+                        this@MainActivity, Manifest.permission.POST_NOTIFICATIONS
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    NotificationsPermissionRequestScreen {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            ActivityCompat.requestPermissions(
+                                this@MainActivity,
+                                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                                1
+                            )
                         }
                     }
+                } else {
 
-                    fetchLocation()
+                    UI({
+                        if (buttonText.value == "Disable Auto Silent") {
+                            stopService(Intent(this, BackgroundLocationService::class.java))
 
-                    UI(
-                        { fetchLocation() }, if (geofence.value) {
+                        } else {
+                            startService(Intent(this, BackgroundLocationService::class.java))
+                        }
+                    },
+                        if (geofence.collectAsState().value) {
                             "You are in ${geofenceData!!.name} at ${geofenceData!!.address}."
-                        } else "You are currently not within a masjid.", geofence.value,
+                        } else "You are currently not within a masjid.",
+                        geofence.collectAsState().value,
                         {
                             startActivity(
-                                this,
-                                Intent(
+                                this, Intent(
                                     Intent.ACTION_VIEW,
                                     Uri.parse("https://github.com/itsha123/Auto-Silent-Database/issues")
                                 ), null
                             )
-                        }
-                    )
+                        })
                 }
 
             }
@@ -160,6 +164,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val serviceIntent = Intent(this, BackgroundLocationService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent)
+        }
         setContent {
             AutoSilentTheme {
                 MainScreen()
@@ -172,12 +180,20 @@ class MainActivity : ComponentActivity() {
         setContent {
             AutoSilentTheme {
                 MainScreen()
-
             }
         }
     }
 }
 
+fun isServiceRunning(serviceClass: Class<*>, context: Context): Boolean {
+    val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+    for (service in manager.getRunningServices(Integer.MAX_VALUE)) {
+        if (serviceClass.name == service.service.className) {
+            return true
+        }
+    }
+    return false
+}
 
 fun fetchLocationFromInternet(userLat: Double, userLong: Double, context: Context): GeofenceData? {
     var geofence = false
@@ -216,7 +232,7 @@ fun fetchLocationFromInternet(userLat: Double, userLong: Double, context: Contex
         Log.i("Internet", "Fetching location data")
         val client = OkHttpClient()
         val request = Request.Builder()
-            .url("https://raw.githubusercontent.com/itsha123/Auto-Silent-Database/main/${userLat.toInt()}%2C%20${userLong.toInt()}.csv")
+            .url("https://raw.githubusercontent.com/Auto-Silent/Auto-Silent-Database/main/${userLat.toInt()}%2C%20${userLong.toInt()}.csv")
             .build()
         Log.i("Internet", "Fetching location data")
         try {
@@ -269,6 +285,38 @@ fun fetchLocationFromInternet(userLat: Double, userLong: Double, context: Contex
     return geofenceData
 }
 
+fun fetchLocation(context: Context, audioManager: AudioManager) {
+    fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+    if (ActivityCompat.checkSelfPermission(
+            context, Manifest.permission.ACCESS_FINE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+            context, Manifest.permission.ACCESS_COARSE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED
+    ) {
+    } else {
+        fusedLocationClient.getCurrentLocation(
+            Priority.PRIORITY_HIGH_ACCURACY, null
+        ).addOnSuccessListener { location: Location? ->
+            if (location != null) {
+                GlobalScope.launch(Dispatchers.IO) {
+                    geofenceData = fetchLocationFromInternet(
+                        location.latitude, location.longitude, context
+                    )
+                    withContext(Dispatchers.Main) {
+                        Log.i("Location", "location updated")
+                        geofence.value = geofenceData!!.inGeofence
+                        if (geofence.value) {
+                            audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+                        } else {
+                            audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 fun isUserInGeofence(
     userLat: Double,
     userLng: Double,
@@ -305,9 +353,8 @@ fun n(n: Int): Int {
 }
 
 @Composable
-fun UI(onClick: () -> Unit, geofenceText: String, inGeofence : Boolean, link: () -> Unit) {
+fun UI(onClick: () -> Unit, geofenceText: String, inGeofence: Boolean, link: () -> Unit) {
     val showDialog = remember { mutableStateOf(false) }
-
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -324,39 +371,39 @@ fun UI(onClick: () -> Unit, geofenceText: String, inGeofence : Boolean, link: ()
         verticalArrangement = Arrangement.Bottom
     ) {
         if (!inGeofence) {
-            Text(
-                text = "In a masjid?",
+            Text(text = "In a masjid?",
                 modifier = Modifier
                     .clip(MaterialTheme.shapes.medium)
                     .clickable { showDialog.value = true }
                     .padding(8.dp),
                 textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.primary
-            )
+                color = MaterialTheme.colorScheme.primary)
         }
-        Button(onClick = onClick) {
-            Text("Update Location")
+        Button(onClick = {
+            onClick()
+            if (buttonText.value == "Disable Auto Silent") {
+                buttonText.value = "Enable Auto Silent"
+            } else {
+                buttonText.value = "Disable Auto Silent"
+            }
+        }) {
+            Text(buttonText.collectAsState().value)
         }
         if (showDialog.value) {
-            AlertDialog(
-                onDismissRequest = { showDialog.value = false },
-                text = {
-                    Text("It looks like your masjid is not in our database. Please visit our GitHub page and submit an issue to help us add your masjid.")
-                },
-                confirmButton = {
-                    TextButton(onClick = {
-                        link()
-                        showDialog.value = false
-                    }) {
-                        Text("Open GitHub")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showDialog.value = false }) {
-                        Text("Close")
-                    }
+            AlertDialog(onDismissRequest = { showDialog.value = false }, text = {
+                Text("It looks like your masjid is not in our database. Please visit our GitHub page and submit an issue to help us add your masjid.")
+            }, confirmButton = {
+                TextButton(onClick = {
+                    link()
+                    showDialog.value = false
+                }) {
+                    Text("Open GitHub")
                 }
-            )
+            }, dismissButton = {
+                TextButton(onClick = { showDialog.value = false }) {
+                    Text("Close")
+                }
+            })
 
         }
     }
