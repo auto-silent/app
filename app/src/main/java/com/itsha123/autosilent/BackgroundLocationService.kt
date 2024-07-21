@@ -35,6 +35,11 @@ class BackgroundLocationService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val sharedPref = getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
+        if (!sharedPref.getBoolean("enabled", true)) {
+            Log.i("test:)", "Service stopped")
+            stopService(Intent(this, BackgroundLocationService::class.java))
+        }
         Log.d("test:)", "Service started")
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         createNotificationChannel()

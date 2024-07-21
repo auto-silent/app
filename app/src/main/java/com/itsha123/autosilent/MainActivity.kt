@@ -1,5 +1,6 @@
 package com.itsha123.autosilent
 
+import SettingsScreen
 import android.Manifest
 import android.app.ActivityManager
 import android.app.NotificationManager
@@ -15,13 +16,19 @@ import android.provider.Settings
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.clickable
+import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -31,12 +38,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.startActivity
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
@@ -77,12 +87,13 @@ private var locationData: LocationData? = null
 
 private var geofenceData: GeofenceData? = null
 var geofence = MutableStateFlow(false)
-var buttonText = MutableStateFlow("Disable Auto Silent")
+var buttonText = MutableStateFlow("Turn Off")
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     @OptIn(DelicateCoroutinesApi::class)
     @Composable
-    fun MainScreen() {
+    fun MainScreen(navController: NavController) {
         if (ActivityCompat.checkSelfPermission(
                 this@MainActivity, Manifest.permission.ACCESS_BACKGROUND_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
@@ -94,9 +105,7 @@ class MainActivity : ComponentActivity() {
         }
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        setContent {
-            AutoSilentTheme {
+        AutoSilentTheme {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !notificationManager.isNotificationPolicyAccessGranted) {
                     DNDPermissionRequestScreen {
                         startActivity(Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS))
@@ -135,13 +144,34 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 } else {
-
+                    val sharedPref = getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
+                    if (sharedPref.getBoolean("firstRun", true)) {
+                        with(sharedPref.edit()) {
+                            putBoolean("firstRun", false)
+                            apply()
+                        }
+                        if (!isServiceRunning(BackgroundLocationService::class.java, this)) {
+                            startForegroundService(
+                                Intent(
+                                    this,
+                                    BackgroundLocationService::class.java
+                                )
+                            )
+                        }
+                    }
                     UI({
-                        if (buttonText.value == "Disable Auto Silent") {
+                        if (buttonText.value == "Turn Off") {
                             stopService(Intent(this, BackgroundLocationService::class.java))
 
                         } else {
-                            startService(Intent(this, BackgroundLocationService::class.java))
+                            if (!isServiceRunning(BackgroundLocationService::class.java, this)) {
+                                startForegroundService(
+                                    Intent(
+                                        this,
+                                        BackgroundLocationService::class.java
+                                    )
+                                )
+                            }
                         }
                     },
                         if (geofence.collectAsState().value) {
@@ -155,36 +185,70 @@ class MainActivity : ComponentActivity() {
                                     Uri.parse("https://github.com/itsha123/Auto-Silent-Database/issues")
                                 ), null
                             )
-                        })
+                        }, navController
+                    )
                 }
 
-            }
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val serviceIntent = Intent(this, BackgroundLocationService::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (!isServiceRunning(BackgroundLocationService::class.java, this)) {
             startForegroundService(serviceIntent)
-        }
-        setContent {
-            AutoSilentTheme {
-                MainScreen()
             }
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
         setContent {
             AutoSilentTheme {
-                MainScreen()
+                val navController = rememberNavController()
+                NavHost(
+                    navController = navController,
+                    startDestination = "main",
+                    enterTransition = {
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(300)
+                        )
+                    },
+                    exitTransition = {
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(300)
+                        )
+                    },
+                    popEnterTransition = {
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(300)
+                        )
+                    },
+                    popExitTransition = {
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(300)
+                        )
+                    }
+                ) {
+                    composable("main") {
+                        MainScreen(navController)
+                    }
+                    composable("settings") {
+                        SettingsScreen(navController)
+                    }
+                    composable("general_settings") {
+                        GeneralSettingsScreen(navController, this@MainActivity)
+                    }
+                    composable("cache_settings") {
+                        CacheSettingsScreen(navController, this@MainActivity)
+                    }
+                }
             }
         }
     }
 }
-
 fun isServiceRunning(serviceClass: Class<*>, context: Context): Boolean {
     val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
     for (service in manager.getRunningServices(Integer.MAX_VALUE)) {
@@ -200,7 +264,8 @@ fun fetchLocationFromInternet(userLat: Double, userLong: Double, context: Contex
     val filename = "${userLat.toInt()}%2C%20${userLong.toInt()}.csv"
     val file = File(context.filesDir, filename)
     val data: String
-    if (file.exists()) {
+    val lastFileUpdate = file.lastModified()
+    if (file.exists() && System.currentTimeMillis() - lastFileUpdate < 86400000) {
         Log.i("Internet", "Reading location data from file")
         val inputStream = context.openFileInput(filename)
 
@@ -285,15 +350,15 @@ fun fetchLocationFromInternet(userLat: Double, userLong: Double, context: Contex
     return geofenceData
 }
 
+@OptIn(DelicateCoroutinesApi::class)
 fun fetchLocation(context: Context, audioManager: AudioManager) {
     fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
     if (ActivityCompat.checkSelfPermission(
             context, Manifest.permission.ACCESS_FINE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+        ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
             context, Manifest.permission.ACCESS_COARSE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED
+        ) == PackageManager.PERMISSION_GRANTED
     ) {
-    } else {
         fusedLocationClient.getCurrentLocation(
             Priority.PRIORITY_HIGH_ACCURACY, null
         ).addOnSuccessListener { location: Location? ->
@@ -306,7 +371,13 @@ fun fetchLocation(context: Context, audioManager: AudioManager) {
                         Log.i("Location", "location updated")
                         geofence.value = geofenceData!!.inGeofence
                         if (geofence.value) {
-                            audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+                            val sharedPref =
+                                context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
+                            if (sharedPref.getBoolean("vibrateChecked", false)) {
+                                audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
+                            } else {
+                                audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+                            }
                         } else {
                             audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
                         }
@@ -353,8 +424,22 @@ fun n(n: Int): Int {
 }
 
 @Composable
-fun UI(onClick: () -> Unit, geofenceText: String, inGeofence: Boolean, link: () -> Unit) {
+fun UI(
+    onClick: () -> Unit,
+    geofenceText: String,
+    inGeofence: Boolean,
+    link: () -> Unit,
+    navController: NavController
+) {
     val showDialog = remember { mutableStateOf(false) }
+    Column(horizontalAlignment = Alignment.End, modifier = Modifier.fillMaxSize()) {
+        FloatingActionButton(onClick = {
+            navController.navigate("settings")
+            Log.d("test:)", "Settings button clicked")
+        }, modifier = Modifier.padding(16.dp)) {
+            Icon(Icons.Rounded.Settings, contentDescription = "Settings")
+        }
+    }
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -371,20 +456,20 @@ fun UI(onClick: () -> Unit, geofenceText: String, inGeofence: Boolean, link: () 
         verticalArrangement = Arrangement.Bottom
     ) {
         if (!inGeofence) {
-            Text(text = "In a masjid?",
-                modifier = Modifier
-                    .clip(MaterialTheme.shapes.medium)
-                    .clickable { showDialog.value = true }
-                    .padding(8.dp),
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.primary)
+            TextButton(onClick = { showDialog.value = true }) {
+                Text(
+                    "In a masjid?",
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
         Button(onClick = {
             onClick()
-            if (buttonText.value == "Disable Auto Silent") {
-                buttonText.value = "Enable Auto Silent"
+            if (buttonText.value == "Turn Off") {
+                buttonText.value = "Turn On"
             } else {
-                buttonText.value = "Disable Auto Silent"
+                buttonText.value = "Turn Off"
             }
         }) {
             Text(buttonText.collectAsState().value)
@@ -410,10 +495,10 @@ fun UI(onClick: () -> Unit, geofenceText: String, inGeofence: Boolean, link: () 
 }
 
 
-@Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+@Preview(showBackground = true)
+fun UIPreview() {
     AutoSilentTheme {
-        UI({}, "preview", false, {})
+        UI({}, "You are currently not within a masjid.", false, {}, rememberNavController())
     }
 }
