@@ -24,7 +24,7 @@
         android:theme="@style/Theme.AutoSilent"
         tools:targetApi="31" >
         <receiver
-            android:name=".BootReceiver"
+            android:name=".utilities.service.BootReceiver"
             android:directBootAware="true"
             android:exported="false">
             <intent-filter>
@@ -32,7 +32,7 @@
             </intent-filter>
         </receiver>
         <service
-            android:name=".BackgroundLocationService"
+            android:name=".utilities.service.BackgroundLocationService"
             android:exported="false"
             android:foregroundServiceType="location" />
         <activity

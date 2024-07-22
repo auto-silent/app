@@ -1,4 +1,4 @@
-package com.itsha123.autosilent
+package com.itsha123.autosilent.utilities.service
 
 import android.content.Context
 import android.content.Intent
@@ -9,8 +9,7 @@ import androidx.work.WorkerParameters
 
 class BootWorker(context: Context, workerParams: WorkerParameters) : Worker(context, workerParams) {
     override fun doWork(): Result {
-        // Perform your task here
-        Log.i("BootWorker", "Worker is running")
+        Log.i("bootWorker", "Worker is running")
         val serviceIntent = Intent(applicationContext, BackgroundLocationService::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             applicationContext.startForegroundService(serviceIntent)
