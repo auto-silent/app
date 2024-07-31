@@ -10,8 +10,10 @@ import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import com.itsha123.autosilent.singletons.Variables.database
 import com.itsha123.autosilent.singletons.Variables.geofence
 import com.itsha123.autosilent.singletons.Variables.geofenceData
+import com.itsha123.autosilent.singletons.Variables.internet
 import com.opencsv.CSVReader
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -41,6 +43,44 @@ data class LocationData(
     val radius: Double
 )
 
+@OptIn(DelicateCoroutinesApi::class)
+fun fetchLocation(context: Context, audioManager: AudioManager, callback: () -> Unit) {
+    fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+    if (ActivityCompat.checkSelfPermission(
+            context, Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+            context, Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+    ) {
+        fusedLocationClient.getCurrentLocation(
+            Priority.PRIORITY_HIGH_ACCURACY, null
+        ).addOnSuccessListener { location: Location? ->
+            if (location != null) {
+                GlobalScope.launch(Dispatchers.IO) {
+                    geofenceData = fetchLocationFromInternet(
+                        location.latitude, location.longitude, context
+                    )
+                    withContext(Dispatchers.Main) {
+                        geofence.value = geofenceData!!.inGeofence
+                        if (geofence.value) {
+                            val sharedPref =
+                                context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
+                            if (sharedPref.getBoolean("vibrateChecked", false)) {
+                                audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
+                            } else {
+                                audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+                            }
+                        } else {
+                            audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
+                        }
+                        callback()
+                    }
+                }
+            }
+        }
+    }
+}
+
 lateinit var fusedLocationClient: FusedLocationProviderClient
 var locationData: LocationData? = null
 
@@ -51,6 +91,8 @@ fun fetchLocationFromInternet(userLat: Double, userLong: Double, context: Contex
     val data: String
     val lastFileUpdate = file.lastModified()
     if (file.exists() && System.currentTimeMillis() - lastFileUpdate < 86400000) {
+        internet.value = true
+        database.value = true
         Log.i("geofenceEvent", "Reading location data from file: $filename")
         val inputStream = context.openFileInput(filename)
 
@@ -76,7 +118,8 @@ fun fetchLocationFromInternet(userLat: Double, userLong: Double, context: Contex
         }
 
         inputStream.close()
-    } else {
+    } else if (isInternetAvailable()) {
+        internet.value = true
         Log.i("geofenceEvent", "Fetching location data")
         val client = OkHttpClient()
         val request = Request.Builder()
@@ -84,7 +127,16 @@ fun fetchLocationFromInternet(userLat: Double, userLong: Double, context: Contex
             .build()
         try {
             val response = client.newCall(request).execute()
-            if (!response.isSuccessful) throw IOException("Unexpected code $response")
+            if (!response.isSuccessful) {
+                if (response.code == 404) {
+                    database.value = false
+                    Log.d("geofenceEvent", "Database false")
+                    throw IOException("Unexpected code $response")
+                } else {
+                    throw IOException("Unexpected code $response")
+                }
+            }
+            database.value = true
             val s = response.body?.string()
             val outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE)
 
@@ -114,6 +166,8 @@ fun fetchLocationFromInternet(userLat: Double, userLong: Double, context: Contex
         } catch (e: IOException) {
             Log.e("Internet", "Failed to fetch location data", e)
         }
+    } else {
+        internet.value = false
     }
     geofenceData = if (geofence) {
         GeofenceData(
@@ -126,43 +180,6 @@ fun fetchLocationFromInternet(userLat: Double, userLong: Double, context: Contex
     }
     Log.i("geofenceEvent", geofenceData.toString())
     return geofenceData
-}
-
-@OptIn(DelicateCoroutinesApi::class)
-fun fetchLocation(context: Context, audioManager: AudioManager) {
-    fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-    if (ActivityCompat.checkSelfPermission(
-            context, Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-            context, Manifest.permission.ACCESS_COARSE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-    ) {
-        fusedLocationClient.getCurrentLocation(
-            Priority.PRIORITY_HIGH_ACCURACY, null
-        ).addOnSuccessListener { location: Location? ->
-            if (location != null) {
-                GlobalScope.launch(Dispatchers.IO) {
-                    geofenceData = fetchLocationFromInternet(
-                        location.latitude, location.longitude, context
-                    )
-                    withContext(Dispatchers.Main) {
-                        geofence.value = geofenceData!!.inGeofence
-                        if (geofence.value) {
-                            val sharedPref =
-                                context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
-                            if (sharedPref.getBoolean("vibrateChecked", false)) {
-                                audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
-                            } else {
-                                audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
-                            }
-                        } else {
-                            audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
 fun isUserInGeofence(

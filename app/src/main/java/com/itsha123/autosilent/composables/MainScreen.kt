@@ -22,8 +22,10 @@ import com.itsha123.autosilent.composables.permissions.DNDPermissionRequestScree
 import com.itsha123.autosilent.composables.permissions.LocationPermissionRequestScreen
 import com.itsha123.autosilent.composables.permissions.NotificationsPermissionRequestScreen
 import com.itsha123.autosilent.singletons.Variables.buttonText
+import com.itsha123.autosilent.singletons.Variables.database
 import com.itsha123.autosilent.singletons.Variables.geofence
 import com.itsha123.autosilent.singletons.Variables.geofenceData
+import com.itsha123.autosilent.singletons.Variables.internet
 import com.itsha123.autosilent.utilities.isServiceRunning
 import com.itsha123.autosilent.utilities.service.BackgroundLocationService
 
@@ -110,19 +112,23 @@ fun MainScreen(navController: NavController, context: Context, activity: MainAct
                     }
                 }
             },
-            if (geofence.collectAsState().value) {
-                stringResource(
+            when {
+                geofence.collectAsState().value -> stringResource(
                     R.string.current_masjid_details,
                     geofenceData!!.name!!,
                     geofenceData!!.address!!
                 )
-            } else stringResource(R.string.not_in_masjid),
+
+                !database.collectAsState().value -> stringResource(R.string.masjid_not_in_database_status)
+                !internet.collectAsState().value -> stringResource(R.string.no_internet_no_cache)
+                else -> stringResource(R.string.not_in_masjid)
+            },
             geofence.collectAsState().value,
             {
                 startActivity(
                     context, Intent(
                         Intent.ACTION_VIEW,
-                        Uri.parse("https://github.com/itsha123/Auto-Silent-Database/issues")
+                        Uri.parse(context.getString(R.string.database_issue_link))
                     ), null
                 )
             }, navController, context

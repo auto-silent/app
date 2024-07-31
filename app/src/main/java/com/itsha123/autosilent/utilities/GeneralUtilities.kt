@@ -2,6 +2,8 @@ package com.itsha123.autosilent.utilities
 
 import android.app.ActivityManager
 import android.content.Context
+import java.net.HttpURLConnection
+import java.net.URL
 
 fun isServiceRunning(serviceClass: Class<*>, context: Context): Boolean {
     val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -15,6 +17,19 @@ fun isServiceRunning(serviceClass: Class<*>, context: Context): Boolean {
 
 fun n(n: Int): Int {
     //Function that converts regular counting to computer counting for sanity
-    val rn = n - 1
-    return rn
+    return n - 1
+}
+
+
+fun isInternetAvailable(): Boolean {
+    val url = URL("https://www.google.com")
+    return try {
+        (url.openConnection() as HttpURLConnection).run {
+            requestMethod = "HEAD"
+            connectTimeout = 10000
+            responseCode in 200..299
+        }
+    } catch (e: Exception) {
+        false
+    }
 }

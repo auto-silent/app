@@ -5,4 +5,6 @@ object Routes {
     const val GENERALSETTINGS = "generalSettings"
     const val CACHESETTINGS = "cacheSettings"
     const val SETTINGS = "settings"
+    const val HELP = "help"
+    const val FAQ = "faq"
 }

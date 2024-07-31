@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 @Composable
-fun SettingsItem(
+fun SettingsItemIconDesc(
     title: String,
     description: String,
     icon: ImageVector,

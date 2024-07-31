@@ -7,4 +7,6 @@ object Variables {
     var geofenceData: GeofenceData? = null
     var geofence = MutableStateFlow(false)
     var buttonText = MutableStateFlow("Turn Off")
+    var database = MutableStateFlow(true)
+    var internet = MutableStateFlow(true)
 }

@@ -16,8 +16,10 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
+import com.itsha123.autosilent.R
 import com.itsha123.autosilent.composables.settings.components.SettingsItemButton
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -34,7 +36,9 @@ import java.io.IOException
 fun CacheSettingsScreen(navController: NavController? = null, context: Context? = null) {
 
     Column {
-        MediumTopAppBar(title = { Text("Cache") }, navigationIcon = {
+        MediumTopAppBar(
+            title = { Text(stringResource(R.string.cache_settings_title)) },
+            navigationIcon = {
             IconButton(onClick = {
                 navController?.popBackStack()
             }) {
@@ -43,7 +47,7 @@ fun CacheSettingsScreen(navController: NavController? = null, context: Context? 
         })
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             item {
-                SettingsItemButton("Update Cache") {
+                SettingsItemButton(stringResource(R.string.update_cache_button)) {
 
                     val cacheDir = context?.filesDir
 

@@ -14,6 +14,10 @@ import android.os.Looper
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.itsha123.autosilent.R
+import com.itsha123.autosilent.singletons.Variables.database
+import com.itsha123.autosilent.singletons.Variables.geofence
+import com.itsha123.autosilent.singletons.Variables.geofenceData
+import com.itsha123.autosilent.singletons.Variables.internet
 import com.itsha123.autosilent.utilities.fetchLocation
 
 const val NOTIFICATION_ID = 1
@@ -22,12 +26,22 @@ class BackgroundLocationService : Service() {
     private val handler = Handler(Looper.getMainLooper())
     private val interval = 15 * 1000L
     lateinit var audioManager: AudioManager
+
     private val runnable = object : Runnable {
         override fun run() {
             Log.i("backgroundService", "Service is running")
-            fetchLocation(this@BackgroundLocationService, audioManager)
+            fetchLocation(this@BackgroundLocationService, audioManager) {
+                updateNotification()
+            }
             handler.postDelayed(this, interval)
         }
+    }
+
+    fun updateNotification() {
+        val notification = getNotification()
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(NOTIFICATION_ID, notification)
     }
 
 
@@ -69,9 +83,21 @@ class BackgroundLocationService : Service() {
         val channelId = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) "1" else ""
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setContentTitle("Auto Silent")
-            .setContentText("Your app is running in foreground.")
+            .setContentText(
+                when {
+                    geofence.value -> this.getString(
+                        R.string.current_masjid_details,
+                        geofenceData!!.name!!,
+                        geofenceData!!.address!!
+                    )
+
+                    !database.value -> this.getString(R.string.masjid_not_in_database_status)
+                    !internet.value -> this.getString(R.string.no_internet_no_cache)
+                    else -> this.getString(R.string.not_in_masjid)
+                }
+            )
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
         return notificationBuilder.build()
     }
 

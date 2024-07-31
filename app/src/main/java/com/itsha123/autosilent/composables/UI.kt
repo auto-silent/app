@@ -82,7 +82,7 @@ fun UI(
         }
         if (showDialog.value) {
             AlertDialog(onDismissRequest = { showDialog.value = false }, text = {
-                Text(stringResource(R.string.masjid_not_in_database))
+                Text(stringResource(R.string.masjid_not_in_database_popup))
             }, confirmButton = {
                 TextButton(onClick = {
                     link()

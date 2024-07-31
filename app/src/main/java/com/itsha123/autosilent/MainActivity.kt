@@ -14,7 +14,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.itsha123.autosilent.composables.MainScreen
 import com.itsha123.autosilent.composables.settings.CacheSettingsScreen
+import com.itsha123.autosilent.composables.settings.FAQScreen
 import com.itsha123.autosilent.composables.settings.GeneralSettingsScreen
+import com.itsha123.autosilent.composables.settings.HelpScreen
 import com.itsha123.autosilent.singletons.Routes
 import com.itsha123.autosilent.ui.theme.AutoSilentTheme
 import com.itsha123.autosilent.utilities.isServiceRunning
@@ -22,7 +24,6 @@ import com.itsha123.autosilent.utilities.service.BackgroundLocationService
 
 
 class MainActivity : ComponentActivity() {
-
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,6 +76,12 @@ class MainActivity : ComponentActivity() {
                     }
                     composable(Routes.CACHESETTINGS) {
                         CacheSettingsScreen(navController, this@MainActivity)
+                    }
+                    composable(Routes.HELP) {
+                        HelpScreen(navController, this@MainActivity)
+                    }
+                    composable(Routes.FAQ) {
+                        FAQScreen(navController)
                     }
                 }
             }

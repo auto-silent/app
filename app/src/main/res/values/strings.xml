@@ -2,7 +2,7 @@
     <string name="app_name">Auto Silent</string>
     <string name="not_in_masjid">You are currently not within a masjid.</string>
     <string name="close">Close</string>
-    <string name="masjid_not_in_database">It looks like your masjid is not in our database. Please visit our GitHub page and submit an issue to help us add your masjid.</string>
+    <string name="masjid_not_in_database_popup">It looks like your masjid is not in our database. Please visit our GitHub page and submit an issue to help us add your masjid.</string>
     <string name="open_github">Open GitHub</string>
     <string name="turn_off">Turn Off</string>
     <string name="turn_on">Turn On</string>
@@ -19,4 +19,15 @@
     <string name="precise_location_permission_rationale">Please grant Precise Location permission to the app, it is required for the app\'s core functionality.</string>
     <string name="dnd_permission_rationale">Please grant Do Not Disturb permission to the app, it is required to change the phone\'s ringer mode.</string>
     <string name="background_location_permission_rationale">Please grant Background Location permission to the app, it is required for the app\'s core functionality. (Click \"Allow all the time\")</string>
+    <string name="help_settings_title">Help</string>
+    <string name="help_settings_desc">FAQ and Send Feedback</string>
+    <string name="update_cache_button">Update Cache</string>
+    <string name="faq_page_title">FAQ</string>
+    <string name="feedback_button_text">Send Feedback</string>
+    <string name="app_issues_link">https://github.com/Auto-Silent/Auto-Silent/issues</string>
+    <string name="database_issue_link">https://github.com/itsha123/Auto-Silent-Database/issues</string>
+    <string name="faq_question_how_to_disable_auto_silent">How to disable auto silent?</string>
+    <string name="faq_answer_how_to_disable_auto_silent">To temporarily disable auto silent until the next opening of the app or until the next boot, press the turn off button in the main menu. To disable it until you re-enable it, go to settings -&gt; general -&gt; disable auto silent.</string>
+    <string name="no_internet_no_cache">You have no internet and you don\'t have a backup in your area.</string>
+    <string name="masjid_not_in_database_status">No data available for your location in the database.</string>
 </resources>
