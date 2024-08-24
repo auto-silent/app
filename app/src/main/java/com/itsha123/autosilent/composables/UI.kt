@@ -27,7 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.itsha123.autosilent.R
-import com.itsha123.autosilent.singletons.Variables.buttonText
+import com.itsha123.autosilent.singletons.Variables.internet
+import com.itsha123.autosilent.singletons.Variables.serviceui
 
 @Composable
 fun UI(
@@ -61,7 +62,7 @@ fun UI(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom
     ) {
-        if (!inGeofence) {
+        if (!inGeofence && internet.collectAsState().value) {
             TextButton(onClick = { showDialog.value = true }) {
                 Text(
                     stringResource(R.string.in_masjid_question),
@@ -72,13 +73,12 @@ fun UI(
         }
         Button(onClick = {
             onClick()
-            if (buttonText.value == context!!.getString(R.string.turn_off)) {
-                buttonText.value = context.getString(R.string.turn_on)
-            } else {
-                buttonText.value = context.getString(R.string.turn_off)
-            }
         }) {
-            Text(buttonText.collectAsState().value)
+            Text(
+                if (serviceui.collectAsState().value) stringResource(R.string.turn_off) else stringResource(
+                    R.string.turn_on
+                )
+            )
         }
         if (showDialog.value) {
             AlertDialog(onDismissRequest = { showDialog.value = false }, text = {

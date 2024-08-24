@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,8 +23,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import com.itsha123.autosilent.R
 import com.itsha123.autosilent.composables.settings.components.SettingsItemSwitch
+import com.itsha123.autosilent.services.location.BackgroundLocationService
+import com.itsha123.autosilent.singletons.Variables.serviceui
 import com.itsha123.autosilent.utilities.isServiceRunning
-import com.itsha123.autosilent.utilities.service.BackgroundLocationService
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -37,6 +39,7 @@ fun GeneralSettingsScreen(navController: NavController? = null, context: Context
             navigationIcon = {
             IconButton(onClick = {
                 navController?.popBackStack()
+                serviceui.value = isServiceRunning(BackgroundLocationService::class.java, context!!)
             }) {
                 Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
             }
@@ -88,6 +91,8 @@ fun GeneralSettingsScreen(navController: NavController? = null, context: Context
                             val audioManager =
                                 context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
                             if (audioManager.ringerMode == AudioManager.RINGER_MODE_VIBRATE) {
+                                Log.d("temp", "Ringer mode is silent")
+                                audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
                                 audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
                             }
                         }

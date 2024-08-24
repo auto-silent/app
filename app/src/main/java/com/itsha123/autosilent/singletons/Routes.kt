@@ -7,4 +7,5 @@ object Routes {
     const val SETTINGS = "settings"
     const val HELP = "help"
     const val FAQ = "faq"
+    const val NOTIFICATIONPERMISSION = "notificationPermission"
 }

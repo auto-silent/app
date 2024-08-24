@@ -8,9 +8,17 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.startActivity
@@ -20,30 +28,45 @@ import com.itsha123.autosilent.R
 import com.itsha123.autosilent.composables.permissions.BackgroundLocationPermissionRequestScreen
 import com.itsha123.autosilent.composables.permissions.DNDPermissionRequestScreen
 import com.itsha123.autosilent.composables.permissions.LocationPermissionRequestScreen
-import com.itsha123.autosilent.composables.permissions.NotificationsPermissionRequestScreen
-import com.itsha123.autosilent.singletons.Variables.buttonText
+import com.itsha123.autosilent.services.location.BackgroundLocationService
+import com.itsha123.autosilent.singletons.Routes
 import com.itsha123.autosilent.singletons.Variables.database
 import com.itsha123.autosilent.singletons.Variables.geofence
 import com.itsha123.autosilent.singletons.Variables.geofenceData
 import com.itsha123.autosilent.singletons.Variables.internet
+import com.itsha123.autosilent.singletons.Variables.location
+import com.itsha123.autosilent.singletons.Variables.recompose
+import com.itsha123.autosilent.singletons.Variables.serviceui
 import com.itsha123.autosilent.utilities.isServiceRunning
-import com.itsha123.autosilent.utilities.service.BackgroundLocationService
+import com.itsha123.autosilent.utilities.permsCheck
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainScreen(navController: NavController, context: Context, activity: MainActivity) {
+    val showDialog = remember { mutableStateOf(false) }
+    if (showDialog.value) {
+        AlertDialog(onDismissRequest = { showDialog.value = false }, text = {
+            Text(stringResource(R.string.enable_app))
+        }, confirmButton = {
+            TextButton(onClick = {
+                showDialog.value = false
+                navController.navigate(Routes.GENERALSETTINGS)
+            }) {
+                Text(stringResource(R.string.go_to_settings))
+            }
+        }, dismissButton = {
+            TextButton(onClick = { showDialog.value = false }) {
+                Text(stringResource(R.string.close))
+            }
+        })
+
+    }
+    val sharedPref = context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
+    recompose.collectAsState().value
     val notificationManager =
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    if (ActivityCompat.checkSelfPermission(
-            context, Manifest.permission.ACCESS_BACKGROUND_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED
-    ) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.revokeSelfPermissionOnKill(Manifest.permission.ACCESS_FINE_LOCATION)
-            context.revokeSelfPermissionOnKill(Manifest.permission.ACCESS_COARSE_LOCATION)
-        }
-    }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !notificationManager.isNotificationPolicyAccessGranted) {
+    if (!notificationManager.isNotificationPolicyAccessGranted) {
         DNDPermissionRequestScreen {
             context.startActivity(Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS))
         }
@@ -51,74 +74,110 @@ fun MainScreen(navController: NavController, context: Context, activity: MainAct
             context, Manifest.permission.ACCESS_FINE_LOCATION
         ) != PackageManager.PERMISSION_GRANTED
     ) {
-        LocationPermissionRequestScreen {
-            ActivityCompat.requestPermissions(
-                activity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1
-            )
+        val launcher =
+            rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+                if (!isGranted && sharedPref.getInt("fineLocationRequests", 0) < 2) {
+                    with(sharedPref.edit()) {
+                        putInt(
+                            "fineLocationRequests",
+                            sharedPref.getInt("fineLocationRequests", 0) + 1
+                        )
+                    }.apply()
+                }
+            }
+        val settingsActivityResultLauncher: ActivityResultLauncher<Intent> =
+            rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
+        LocationPermissionRequestScreen(context) {
+            if (sharedPref.getInt("fineLocationRequests", 0) < 2) {
+                launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            } else {
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", context.packageName, null)
+                }
+                settingsActivityResultLauncher.launch(intent)
+            }
         }
     } else if (ActivityCompat.checkSelfPermission(
             context, Manifest.permission.ACCESS_BACKGROUND_LOCATION
         ) != PackageManager.PERMISSION_GRANTED
     ) {
-        BackgroundLocationPermissionRequestScreen {
-            ActivityCompat.requestPermissions(
-                activity,
-                arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
-                1
-            )
-        }
-    } else if (ActivityCompat.checkSelfPermission(
-            context, Manifest.permission.POST_NOTIFICATIONS
-        ) != PackageManager.PERMISSION_GRANTED
-    ) {
-        NotificationsPermissionRequestScreen {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                ActivityCompat.requestPermissions(
-                    activity,
-                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                    1
-                )
+        val launcher =
+            rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+                if (!isGranted && sharedPref.getInt("backgroundLocationRequests", 0) < 2) {
+                    with(sharedPref.edit()) {
+                        putInt(
+                            "backgroundLocationRequests",
+                            sharedPref.getInt("backgroundLocationRequests", 0) + 1
+                        )
+                    }.apply()
+                }
+            }
+        val settingsActivityResultLauncher: ActivityResultLauncher<Intent> =
+            rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
+        BackgroundLocationPermissionRequestScreen(context) {
+            if (sharedPref.getInt("backgroundLocationRequests", 0) < 2) {
+                launcher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            } else {
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", context.packageName, null)
+                }
+                settingsActivityResultLauncher.launch(intent)
             }
         }
     } else {
-        val sharedPref = context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
-        if (sharedPref.getBoolean("firstRun", true)) {
-            with(sharedPref.edit()) {
-                putBoolean("firstRun", false)
-                apply()
-            }
-            if (!isServiceRunning(BackgroundLocationService::class.java, context)) {
-                context.startForegroundService(
-                    Intent(
+        if (permsCheck(context)) {
+            if (sharedPref.getBoolean("firstRun", true)) {
+                with(sharedPref.edit()) {
+                    putBoolean("firstRun", false)
+                    putInt("fineLocationRequests", 0)
+                    putInt("backgroundLocationRequests", 0)
+                    putInt("notificationRequests", 0)
+                    apply()
+                }
+                if (ActivityCompat.checkSelfPermission(
                         context,
-                        BackgroundLocationService::class.java
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    navController.navigate(Routes.NOTIFICATIONPERMISSION)
+                }
+                if (!isServiceRunning(BackgroundLocationService::class.java, context)) {
+                    context.startForegroundService(
+                        Intent(
+                            context,
+                            BackgroundLocationService::class.java
+                        )
                     )
-                )
+                }
             }
         }
         UI(
             {
-                if (buttonText.value == context.getString(R.string.turn_off)) {
+                if (isServiceRunning(BackgroundLocationService::class.java, context)) {
                     context.stopService(Intent(context, BackgroundLocationService::class.java))
-
+                    serviceui.value = false
                 } else {
-                    if (!isServiceRunning(BackgroundLocationService::class.java, context)) {
                         context.startForegroundService(
                             Intent(
                                 context,
                                 BackgroundLocationService::class.java
                             )
                         )
-                    }
+                    serviceui.value = true
+                }
+                if (!context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
+                        .getBoolean("enabledChecked", true)
+                ) {
+                    showDialog.value = true
                 }
             },
             when {
+                !location.collectAsState().value -> stringResource(R.string.location_disabled)
                 geofence.collectAsState().value -> stringResource(
                     R.string.current_masjid_details,
                     geofenceData!!.name!!,
                     geofenceData!!.address!!
                 )
-
                 !database.collectAsState().value -> stringResource(R.string.masjid_not_in_database_status)
                 !internet.collectAsState().value -> stringResource(R.string.no_internet_no_cache)
                 else -> stringResource(R.string.not_in_masjid)

@@ -1,5 +1,6 @@
 package com.itsha123.autosilent.composables.permissions
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,7 +18,11 @@ import com.itsha123.autosilent.R
 import com.itsha123.autosilent.ui.theme.AutoSilentTheme
 
 @Composable
-fun BackgroundLocationPermissionRequestScreen(onRequestPermission: () -> Unit) {
+fun BackgroundLocationPermissionRequestScreen(
+    context: Context? = null,
+    onRequestPermission: () -> Unit
+) {
+    val sharedPref = context?.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -31,7 +36,13 @@ fun BackgroundLocationPermissionRequestScreen(onRequestPermission: () -> Unit) {
         Button(onClick = {
             onRequestPermission()
         }) {
-            Text(stringResource(R.string.grant_permission))
+            Text(
+                if (sharedPref!!.getInt("backgroundLocationRequests", 0) < 2) {
+                    stringResource(R.string.grant_permission)
+                } else {
+                    stringResource(R.string.open_settings_permission)
+                }
+            )
         }
     }
 }

@@ -1,7 +1,10 @@
 package com.itsha123.autosilent.utilities
 
+import android.Manifest
 import android.app.ActivityManager
 import android.content.Context
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -32,4 +35,23 @@ fun isInternetAvailable(): Boolean {
     } catch (e: Exception) {
         false
     }
+}
+
+fun permsCheck(context: Context): Boolean {
+    return ActivityCompat.checkSelfPermission(
+        context,
+        Manifest.permission.ACCESS_FINE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_NOTIFICATION_POLICY
+            ) == PackageManager.PERMISSION_GRANTED
 }

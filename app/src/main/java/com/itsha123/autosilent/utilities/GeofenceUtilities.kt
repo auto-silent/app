@@ -10,10 +10,12 @@ import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import com.itsha123.autosilent.singletons.Variables
 import com.itsha123.autosilent.singletons.Variables.database
 import com.itsha123.autosilent.singletons.Variables.geofence
 import com.itsha123.autosilent.singletons.Variables.geofenceData
 import com.itsha123.autosilent.singletons.Variables.internet
+import com.itsha123.autosilent.singletons.Variables.ringerMode
 import com.opencsv.CSVReader
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -56,6 +58,7 @@ fun fetchLocation(context: Context, audioManager: AudioManager, callback: () -> 
             Priority.PRIORITY_HIGH_ACCURACY, null
         ).addOnSuccessListener { location: Location? ->
             if (location != null) {
+                Variables.location.value = true
                 GlobalScope.launch(Dispatchers.IO) {
                     geofenceData = fetchLocationFromInternet(
                         location.latitude, location.longitude, context
@@ -63,19 +66,32 @@ fun fetchLocation(context: Context, audioManager: AudioManager, callback: () -> 
                     withContext(Dispatchers.Main) {
                         geofence.value = geofenceData!!.inGeofence
                         if (geofence.value) {
+                            Log.d("test", "In geofence")
                             val sharedPref =
                                 context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
                             if (sharedPref.getBoolean("vibrateChecked", false)) {
                                 audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
                             } else {
-                                audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+                                if (audioManager.ringerMode == AudioManager.RINGER_MODE_SILENT) {
+                                    Log.d("temp", "Ringer mode is silent")
+                                    audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
+                                    audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+                                } else {
+                                    audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+                                }
+                                Log.d("temp", "Ringer mode changed to silent")
                             }
                         } else {
-                            audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
+                            audioManager.ringerMode = ringerMode.value
+                            Log.d("temp", ringerMode.value.toString())
                         }
                         callback()
                     }
                 }
+            } else {
+                Log.w("geofenceEvent", "Location is null")
+                Variables.location.value = false
+                callback()
             }
         }
     }
@@ -98,25 +114,59 @@ fun fetchLocationFromInternet(userLat: Double, userLong: Double, context: Contex
 
         data = inputStream.bufferedReader().use { it.readText() }
 
-        var nextLine: Array<String>?
-        val csvReader = CSVReader(StringReader(data))
-        while (csvReader.readNext().also { nextLine = it } != null && !geofence) {
-            locationData = LocationData(
-                nextLine!![n(1)],
-                nextLine!![n(2)],
-                nextLine!![n(3)].toDouble(),
-                nextLine!![n(4)].toDouble(),
-                nextLine!![n(5)].toDouble()
-            )
-            geofence = isUserInGeofence(
-                userLat,
-                userLong,
-                locationData!!.latitude,
-                locationData!!.longitude,
-                locationData!!.radius
-            )
+        if (data.isNotBlank()) {
+            var nextLine: Array<String>?
+            val csvReader = CSVReader(StringReader(data))
+            while (csvReader.readNext().also { nextLine = it } != null && !geofence) {
+                if (nextLine!!.size == 5) {
+                    locationData = LocationData(
+                        nextLine!![n(1)],
+                        nextLine!![n(2)],
+                        nextLine!![n(3)].toDoubleOrNull() ?: 0.0,
+                        nextLine!![n(4)].toDoubleOrNull() ?: 0.0,
+                        nextLine!![n(5)].toDoubleOrNull() ?: 0.0
+                    )
+                    geofence = isUserInGeofence(
+                        userLat,
+                        userLong,
+                        locationData!!.latitude,
+                        locationData!!.longitude,
+                        locationData!!.radius
+                    )
+                }
+            }
         }
+        inputStream.close()
+    } else if (file.exists() && !isInternetAvailable()) {
+        internet.value = true
+        database.value = true
+        Log.i("geofenceEvent", "Reading location data from file: $filename")
+        val inputStream = context.openFileInput(filename)
 
+        data = inputStream.bufferedReader().use { it.readText() }
+
+        if (data.isNotBlank()) {
+            var nextLine: Array<String>?
+            val csvReader = CSVReader(StringReader(data))
+            while (csvReader.readNext().also { nextLine = it } != null && !geofence) {
+                if (nextLine!!.size == 5) {
+                    locationData = LocationData(
+                        nextLine!![n(1)],
+                        nextLine!![n(2)],
+                        nextLine!![n(3)].toDoubleOrNull() ?: 0.0,
+                        nextLine!![n(4)].toDoubleOrNull() ?: 0.0,
+                        nextLine!![n(5)].toDoubleOrNull() ?: 0.0
+                    )
+                    geofence = isUserInGeofence(
+                        userLat,
+                        userLong,
+                        locationData!!.latitude,
+                        locationData!!.longitude,
+                        locationData!!.radius
+                    )
+                }
+            }
+        }
         inputStream.close()
     } else if (isInternetAvailable()) {
         internet.value = true
@@ -145,28 +195,33 @@ fun fetchLocationFromInternet(userLat: Double, userLong: Double, context: Contex
             }
 
             outputStream.close()
-            var nextLine: Array<String>?
-            val csvReader = CSVReader(StringReader(s))
-            while (csvReader.readNext().also { nextLine = it } != null && !geofence) {
-                locationData = LocationData(
-                    nextLine!![n(1)],
-                    nextLine!![n(2)],
-                    nextLine!![n(3)].toDouble(),
-                    nextLine!![n(4)].toDouble(),
-                    nextLine!![n(5)].toDouble()
-                )
-                geofence = isUserInGeofence(
-                    userLat,
-                    userLong,
-                    locationData!!.latitude,
-                    locationData!!.longitude,
-                    locationData!!.radius
-                )
+            if (s?.isNotBlank() == true) {
+                var nextLine: Array<String>?
+                val csvReader = CSVReader(StringReader(s))
+                while (csvReader.readNext().also { nextLine = it } != null && !geofence) {
+                    if (nextLine!!.size == 5) {
+                        locationData = LocationData(
+                            nextLine!![n(1)],
+                            nextLine!![n(2)],
+                            nextLine!![n(3)].toDoubleOrNull() ?: 0.0,
+                            nextLine!![n(4)].toDoubleOrNull() ?: 0.0,
+                            nextLine!![n(5)].toDoubleOrNull() ?: 0.0
+                        )
+                        geofence = isUserInGeofence(
+                            userLat,
+                            userLong,
+                            locationData!!.latitude,
+                            locationData!!.longitude,
+                            locationData!!.radius
+                        )
+                    }
+                }
             }
         } catch (e: IOException) {
             Log.e("Internet", "Failed to fetch location data", e)
         }
     } else {
+        database.value = true
         internet.value = false
     }
     geofenceData = if (geofence) {

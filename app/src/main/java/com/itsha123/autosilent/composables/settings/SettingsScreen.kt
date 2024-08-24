@@ -1,3 +1,6 @@
+package com.itsha123.autosilent.composables.settings
+
+import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,18 +21,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import com.itsha123.autosilent.R
 import com.itsha123.autosilent.composables.settings.components.SettingsItemIconDesc
+import com.itsha123.autosilent.services.location.BackgroundLocationService
 import com.itsha123.autosilent.singletons.Routes
-
+import com.itsha123.autosilent.singletons.Variables.serviceui
+import com.itsha123.autosilent.utilities.isServiceRunning
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(navController: NavController? = null) {
+fun SettingsScreen(navController: NavController? = null, context: Context? = null) {
     Column {
         TopAppBar(
             title = { Text("Settings") },
             navigationIcon = {
                 IconButton(onClick = {
                     navController?.popBackStack()
+                    serviceui.value =
+                        isServiceRunning(BackgroundLocationService::class.java, context!!)
                 }) {
                     Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
                 }

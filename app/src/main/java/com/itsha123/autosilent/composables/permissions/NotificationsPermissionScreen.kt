@@ -1,23 +1,35 @@
 package com.itsha123.autosilent.composables.permissions
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.itsha123.autosilent.R
+import com.itsha123.autosilent.singletons.Variables.recompose
 import com.itsha123.autosilent.ui.theme.AutoSilentTheme
 
 @Composable
-fun NotificationsPermissionRequestScreen(onRequestPermission: () -> Unit) {
+fun NotificationsPermissionRequestScreen(
+    navController: NavController? = null,
+    context: Context? = null,
+    onRequestPermission: () -> Unit
+) {
+    val sharedPref = context?.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
+    recompose.collectAsState().value
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -31,7 +43,29 @@ fun NotificationsPermissionRequestScreen(onRequestPermission: () -> Unit) {
         Button(onClick = {
             onRequestPermission()
         }) {
-            Text(stringResource(R.string.grant_permission))
+            Text(
+                if (sharedPref!!.getInt("notificationRequests", 0) < 2) {
+                    stringResource(R.string.grant_permission)
+                } else {
+                    stringResource(R.string.open_settings_permission)
+                }
+            )
+        }
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Bottom
+    ) {
+        TextButton(onClick = { navController?.popBackStack() }) {
+            Text(
+                stringResource(R.string.notifications_permission_reject_button),
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.primary
+            )
+
         }
     }
 }

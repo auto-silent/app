@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.itsha123.autosilent"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.itsha123.autosilent"
-        minSdk = 21
-        targetSdk = 34
+        minSdk = 23
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 

@@ -15,7 +15,7 @@
     <string name="vibrate_toggle_title">Vibrate instead of silent</string>
     <string name="app_toggle_title">Enable Auto Silent</string>
     <string name="grant_permission">Grant Permission</string>
-    <string name="notifications_permission_rationale">Please grant Notifications permission to the app, it is required to make the app work in the background.</string>
+    <string name="notifications_permission_rationale">Would you like to receive a status notification from the app? If so, please grant the permission. You can always enable or disable this later in your phone\'s settings.</string>
     <string name="precise_location_permission_rationale">Please grant Precise Location permission to the app, it is required for the app\'s core functionality.</string>
     <string name="dnd_permission_rationale">Please grant Do Not Disturb permission to the app, it is required to change the phone\'s ringer mode.</string>
     <string name="background_location_permission_rationale">Please grant Background Location permission to the app, it is required for the app\'s core functionality. (Click \"Allow all the time\")</string>
@@ -30,4 +30,12 @@
     <string name="faq_answer_how_to_disable_auto_silent">To temporarily disable auto silent until the next opening of the app or until the next boot, press the turn off button in the main menu. To disable it until you re-enable it, go to settings -&gt; general -&gt; disable auto silent.</string>
     <string name="no_internet_no_cache">You have no internet and you don\'t have a backup in your area.</string>
     <string name="masjid_not_in_database_status">No data available for your location in the database.</string>
+    <string name="no_internet_snackbar_message">No internet</string>
+    <string name="updating_cache_started_snackbar_message">Updating cache...</string>
+    <string name="updating_cache_finished_snackbar_message">Cache update finished</string>
+    <string name="notifications_permission_reject_button">Skip for now</string>
+    <string name="open_settings_permission">Go to Settings</string>
+    <string name="location_disabled">Location is off or unavailable.</string>
+    <string name="enable_app">It looks like you\'ve disabled Auto Silent. Please go to settings to re-enable it.</string>
+    <string name="go_to_settings">Go to Settings</string>
 </resources>
