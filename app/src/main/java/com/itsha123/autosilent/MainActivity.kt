@@ -127,7 +127,9 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         val settingsActivityResultLauncher: ActivityResultLauncher<Intent> =
-                            rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
+                            rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                                navController.popBackStack()
+                            }
                         NotificationsPermissionRequestScreen(navController, this@MainActivity) {
                             recompose.value = !recompose.value
                             if (sharedPref.getInt("notificationRequests", 0) < 2) {
