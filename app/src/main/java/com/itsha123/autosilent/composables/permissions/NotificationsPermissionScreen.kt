@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -28,49 +29,51 @@ fun NotificationsPermissionRequestScreen(
     context: Context? = null,
     onRequestPermission: () -> Unit
 ) {
-    val sharedPref = context?.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
-    recompose.collectAsState().value
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            stringResource(R.string.notifications_permission_rationale),
-            modifier = Modifier.padding(16.dp),
-            textAlign = TextAlign.Center
-        )
-        Button(onClick = {
-            onRequestPermission()
-        }) {
+    Scaffold {
+        val sharedPref = context?.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
+        recompose.collectAsState().value
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
             Text(
-                if (sharedPref!!.getInt("notificationRequests", 0) < 2) {
-                    stringResource(R.string.grant_permission)
-                } else {
-                    stringResource(R.string.open_settings_permission)
-                }
+                stringResource(R.string.notifications_permission_rationale),
+                modifier = Modifier.padding(16.dp),
+                textAlign = TextAlign.Center
             )
+            Button(onClick = {
+                onRequestPermission()
+            }) {
+                Text(
+                    if (sharedPref!!.getInt("notificationRequests", 0) < 2) {
+                        stringResource(R.string.grant_permission)
+                    } else {
+                        stringResource(R.string.open_settings_permission)
+                    }
+                )
+            }
         }
-    }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Bottom
-    ) {
-        TextButton(onClick = { navController?.popBackStack() }) {
-            Text(
-                stringResource(R.string.notifications_permission_reject_button),
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.primary
-            )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Bottom
+        ) {
+            TextButton(onClick = { navController?.popBackStack() }) {
+                Text(
+                    stringResource(R.string.notifications_permission_reject_button),
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.primary
+                )
 
+            }
         }
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun PermissionPreviewNotifications() {
     AutoSilentTheme {

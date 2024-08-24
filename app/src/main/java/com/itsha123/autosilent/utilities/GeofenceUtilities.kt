@@ -73,17 +73,14 @@ fun fetchLocation(context: Context, audioManager: AudioManager, callback: () -> 
                                 audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
                             } else {
                                 if (audioManager.ringerMode == AudioManager.RINGER_MODE_SILENT) {
-                                    Log.d("temp", "Ringer mode is silent")
                                     audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
                                     audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
                                 } else {
                                     audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
                                 }
-                                Log.d("temp", "Ringer mode changed to silent")
                             }
                         } else {
                             audioManager.ringerMode = ringerMode.value
-                            Log.d("temp", ringerMode.value.toString())
                         }
                         callback()
                     }

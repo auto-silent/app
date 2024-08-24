@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -61,7 +63,10 @@ fun SettingsItemSwitch(
             Text(text = title, fontSize = 20.sp)
         }
         Spacer(modifier = Modifier.weight(1f)) // Spacer with flexible weight to push the Switch to the right
-        Switch(checked = isChecked, onCheckedChange = {
+        Switch(
+            colors = SwitchDefaults.colors(checkedTrackColor = MaterialTheme.colorScheme.primary),
+            checked = isChecked,
+            onCheckedChange = {
             isChecked = it
             onCheck()
         }) // Update isChecked state on change

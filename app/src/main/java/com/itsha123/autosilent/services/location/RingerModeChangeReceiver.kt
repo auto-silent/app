@@ -10,13 +10,12 @@ import com.itsha123.autosilent.singletons.Variables.ringerMode
 
 class RingerModeChangeReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d("temp", "Ringer mode change receiver")
         if (intent.action == AudioManager.RINGER_MODE_CHANGED_ACTION) {
             val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            Log.d("temp", "Ringer mode changed")
+            Log.d("ringerMode", "Ringer mode changed: ${audioManager.ringerMode}")
             if (!geofence.value) {
                 ringerMode.value = audioManager.ringerMode
-                Log.d("temp", "not in geofence")
+                Log.d("ringerMode", "not in geofence")
             }
         }
     }

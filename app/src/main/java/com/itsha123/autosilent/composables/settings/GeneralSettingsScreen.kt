@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +14,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -25,6 +25,7 @@ import com.itsha123.autosilent.R
 import com.itsha123.autosilent.composables.settings.components.SettingsItemSwitch
 import com.itsha123.autosilent.services.location.BackgroundLocationService
 import com.itsha123.autosilent.singletons.Variables.serviceui
+import com.itsha123.autosilent.ui.theme.AutoSilentTheme
 import com.itsha123.autosilent.utilities.isServiceRunning
 
 
@@ -32,72 +33,84 @@ import com.itsha123.autosilent.utilities.isServiceRunning
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GeneralSettingsScreen(navController: NavController? = null, context: Context? = null) {
-    val sharedPref = context?.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
-    Column {
-        MediumTopAppBar(
-            title = { Text(stringResource(R.string.general_settings_title)) },
-            navigationIcon = {
-            IconButton(onClick = {
-                navController?.popBackStack()
-                serviceui.value = isServiceRunning(BackgroundLocationService::class.java, context!!)
-            }) {
-                Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
-            }
-        })
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            item {
-                SettingsItemSwitch(stringResource(R.string.app_toggle_title), context, {
-                    var enabledChecked = sharedPref?.getBoolean("enabledChecked", true)
-                    if (sharedPref != null) {
-                        with(sharedPref.edit()) {
-                            putBoolean("enabledChecked", !enabledChecked!!)
-                            apply()
-                        }
-                        enabledChecked = !enabledChecked!!
+    Scaffold {
+        val sharedPref = context?.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
+        Column {
+            MediumTopAppBar(
+                title = { Text(stringResource(R.string.general_settings_title)) },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        navController?.popBackStack()
+                        serviceui.value =
+                            isServiceRunning(BackgroundLocationService::class.java, context!!)
+                    }) {
+                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
                     }
-                    if (enabledChecked == true) {
-                        if (!isServiceRunning(BackgroundLocationService::class.java, context!!)) {
-                            context.startForegroundService(
+                })
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                item {
+                    SettingsItemSwitch(stringResource(R.string.app_toggle_title), context, {
+                        var enabledChecked = sharedPref?.getBoolean("enabledChecked", true)
+                        if (sharedPref != null) {
+                            with(sharedPref.edit()) {
+                                putBoolean("enabledChecked", !enabledChecked!!)
+                                apply()
+                            }
+                            enabledChecked = !enabledChecked!!
+                        }
+                        if (enabledChecked == true) {
+                            if (!isServiceRunning(
+                                    BackgroundLocationService::class.java,
+                                    context!!
+                                )
+                            ) {
+                                context.startForegroundService(
+                                    Intent(
+                                        context,
+                                        BackgroundLocationService::class.java
+                                    )
+                                )
+                            }
+                        } else {
+                            context?.stopService(
                                 Intent(
                                     context,
                                     BackgroundLocationService::class.java
                                 )
                             )
                         }
-                    } else {
-                        context?.stopService(Intent(context, BackgroundLocationService::class.java))
-                    }
-                }, "enabledChecked", true)
-            }
-            item {
-                SettingsItemSwitch(
-                    title = stringResource(R.string.vibrate_toggle_title),
-                    context,
-                    onCheck = {
-                    var vibrateChecked = sharedPref?.getBoolean("vibrateChecked", false)
-                    if (sharedPref != null) {
-                        with(sharedPref.edit()) {
-                            putBoolean("vibrateChecked", !vibrateChecked!!)
-                            apply()
-                        }
-                        vibrateChecked = !vibrateChecked!!
-                        if (vibrateChecked == true) {
-                            val audioManager =
-                                context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                            if (audioManager.ringerMode == AudioManager.RINGER_MODE_SILENT) {
-                                audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
+                    }, "enabledChecked", true)
+                }
+                item {
+                    SettingsItemSwitch(
+                        title = stringResource(R.string.vibrate_toggle_title),
+                        context,
+                        onCheck = {
+                            var vibrateChecked = sharedPref?.getBoolean("vibrateChecked", false)
+                            if (sharedPref != null) {
+                                with(sharedPref.edit()) {
+                                    putBoolean("vibrateChecked", !vibrateChecked!!)
+                                    apply()
+                                }
+                                vibrateChecked = !vibrateChecked!!
+                                if (vibrateChecked == true) {
+                                    val audioManager =
+                                        context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                                    if (audioManager.ringerMode == AudioManager.RINGER_MODE_SILENT) {
+                                        audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
+                                    }
+                                } else {
+                                    val audioManager =
+                                        context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                                    if (audioManager.ringerMode == AudioManager.RINGER_MODE_VIBRATE) {
+                                        audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
+                                        audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+                                    }
+                                }
                             }
-                        } else {
-                            val audioManager =
-                                context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                            if (audioManager.ringerMode == AudioManager.RINGER_MODE_VIBRATE) {
-                                Log.d("temp", "Ringer mode is silent")
-                                audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
-                                audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
-                            }
-                        }
-                    }
-                }, "vibrateChecked", false)
+                        }, "vibrateChecked", false
+                    )
+                }
             }
         }
     }
@@ -107,5 +120,7 @@ fun GeneralSettingsScreen(navController: NavController? = null, context: Context
 @Preview(showBackground = true)
 @Composable
 fun GeneralSettingsScreenPreview() {
-    GeneralSettingsScreen()
+    AutoSilentTheme {
+        GeneralSettingsScreen()
+    }
 }

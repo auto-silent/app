@@ -12,6 +12,7 @@ import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -29,46 +30,48 @@ import com.itsha123.autosilent.utilities.isServiceRunning
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(navController: NavController? = null, context: Context? = null) {
-    Column {
-        TopAppBar(
-            title = { Text("Settings") },
-            navigationIcon = {
-                IconButton(onClick = {
-                    navController?.popBackStack()
-                    serviceui.value =
-                        isServiceRunning(BackgroundLocationService::class.java, context!!)
-                }) {
-                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
+    Scaffold {
+        Column {
+            TopAppBar(
+                title = { Text("Settings") },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        navController?.popBackStack()
+                        serviceui.value =
+                            isServiceRunning(BackgroundLocationService::class.java, context!!)
+                    }) {
+                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
+                    }
                 }
-            }
-        )
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            item {
-                SettingsItemIconDesc(
-                    title = stringResource(R.string.general_settings_title),
-                    icon = Icons.Rounded.Settings,
-                    navController = navController,
-                    navigateTo = Routes.GENERALSETTINGS,
-                    description = stringResource(R.string.general_settings_desc)
-                )
-            }
-            item {
-                SettingsItemIconDesc(
-                    title = stringResource(R.string.cache_settings_title),
-                    description = stringResource(R.string.cache_settings_desc),
-                    icon = Icons.Rounded.Save,
-                    navController = navController,
-                    navigateTo = Routes.CACHESETTINGS
-                )
-            }
-            item {
-                SettingsItemIconDesc(
-                    title = stringResource(R.string.help_settings_title),
-                    description = stringResource(R.string.help_settings_desc),
-                    icon = Icons.AutoMirrored.Rounded.Help,
-                    navController = navController,
-                    navigateTo = Routes.HELP
-                )
+            )
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                item {
+                    SettingsItemIconDesc(
+                        title = stringResource(R.string.general_settings_title),
+                        icon = Icons.Rounded.Settings,
+                        navController = navController,
+                        navigateTo = Routes.GENERALSETTINGS,
+                        description = stringResource(R.string.general_settings_desc)
+                    )
+                }
+                item {
+                    SettingsItemIconDesc(
+                        title = stringResource(R.string.cache_settings_title),
+                        description = stringResource(R.string.cache_settings_desc),
+                        icon = Icons.Rounded.Save,
+                        navController = navController,
+                        navigateTo = Routes.CACHESETTINGS
+                    )
+                }
+                item {
+                    SettingsItemIconDesc(
+                        title = stringResource(R.string.help_settings_title),
+                        description = stringResource(R.string.help_settings_desc),
+                        icon = Icons.AutoMirrored.Rounded.Help,
+                        navController = navController,
+                        navigateTo = Routes.HELP
+                    )
+                }
             }
         }
     }
