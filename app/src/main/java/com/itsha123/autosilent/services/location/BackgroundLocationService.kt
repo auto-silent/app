@@ -31,6 +31,7 @@ class BackgroundLocationService : Service() {
     private val handler = Handler(Looper.getMainLooper())
     private val interval = 15 * 1000L
     lateinit var audioManager: AudioManager
+    private var ringerModeChangeReceiver: RingerModeChangeReceiver? = null
 
     private val runnable = object : Runnable {
         override fun run() {
@@ -51,7 +52,7 @@ class BackgroundLocationService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        val ringerModeChangeReceiver = RingerModeChangeReceiver()
+        ringerModeChangeReceiver = RingerModeChangeReceiver()
         val filter = IntentFilter(AudioManager.RINGER_MODE_CHANGED_ACTION)
         registerReceiver(ringerModeChangeReceiver, filter)
     }
@@ -59,7 +60,10 @@ class BackgroundLocationService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         handler.removeCallbacks(runnable)
-        unregisterReceiver(RingerModeChangeReceiver())
+        ringerModeChangeReceiver?.let {
+            unregisterReceiver(it)
+        }
+        ringerModeChangeReceiver = null
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
