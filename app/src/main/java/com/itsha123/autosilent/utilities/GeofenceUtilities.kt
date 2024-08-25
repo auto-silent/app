@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.media.AudioManager
+import android.os.Build
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -66,17 +67,18 @@ fun fetchLocation(context: Context, audioManager: AudioManager, callback: () -> 
                     withContext(Dispatchers.Main) {
                         geofence.value = geofenceData!!.inGeofence
                         if (geofence.value) {
-                            Log.d("test", "In geofence")
                             val sharedPref =
                                 context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
                             if (sharedPref.getBoolean("vibrateChecked", false)) {
                                 audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
                             } else {
-                                if (audioManager.ringerMode == AudioManager.RINGER_MODE_SILENT) {
+                                if (audioManager.ringerMode == AudioManager.RINGER_MODE_SILENT && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                                     audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
                                     audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
                                 } else {
-                                    audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+                                    if (audioManager.ringerMode != AudioManager.RINGER_MODE_SILENT) {
+                                        audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+                                    }
                                 }
                             }
                         } else {
