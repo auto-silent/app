@@ -15,7 +15,6 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.itsha123.autosilent.R
 import com.itsha123.autosilent.singletons.Variables.database
@@ -66,14 +65,17 @@ class BackgroundLocationService : Service() {
         ringerModeChangeReceiver = null
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.i("backgroundService", "Service started")
         val sharedPref = getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         createNotificationChannel()
         val notification = getNotification()
-        startForeground(NOTIFICATION_ID, notification, FOREGROUND_SERVICE_TYPE_LOCATION)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(NOTIFICATION_ID, notification, FOREGROUND_SERVICE_TYPE_LOCATION)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForeground(NOTIFICATION_ID, notification)
+        }
         if (!sharedPref.getBoolean("enabledChecked", true)) {
             Log.i("backgroundService", "Service stopped due to user preference")
             stopSelf()
