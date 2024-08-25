@@ -1,8 +1,6 @@
 package com.itsha123.autosilent.composables.settings.components
 
 import android.content.Context
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -28,7 +26,6 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun SettingsItemSwitch(
     title: String,
@@ -60,7 +57,7 @@ fun SettingsItemSwitch(
             .scale(scale.value)
     ) {
         Column {
-            Text(text = title, fontSize = 20.sp)
+            Text(text = title, fontSize = 18.sp)
         }
         Spacer(modifier = Modifier.weight(1f)) // Spacer with flexible weight to push the Switch to the right
         Switch(

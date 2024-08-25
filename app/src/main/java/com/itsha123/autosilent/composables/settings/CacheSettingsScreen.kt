@@ -1,11 +1,10 @@
 package com.itsha123.autosilent.composables.settings
 
 import android.content.Context
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -35,14 +34,13 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class, DelicateCoroutinesApi::class)
 @Composable
 fun CacheSettingsScreen(navController: NavController? = null, context: Context? = null) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) {
-        Column {
+    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { innerPadding ->
+        Column(Modifier.padding(innerPadding)) {
         MediumTopAppBar(
             title = { Text(stringResource(R.string.cache_settings_title)) },
             navigationIcon = {
@@ -117,7 +115,6 @@ fun CacheSettingsScreen(navController: NavController? = null, context: Context? 
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true)
 @Composable
 fun PreviewCacheSettingsScreen() {

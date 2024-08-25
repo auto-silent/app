@@ -15,6 +15,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.itsha123.autosilent.R
 import com.itsha123.autosilent.singletons.Variables.database
@@ -69,11 +70,13 @@ class BackgroundLocationService : Service() {
         Log.i("backgroundService", "Service started")
         val sharedPref = getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        createNotificationChannel()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createNotificationChannel()
+        }
         val notification = getNotification()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(NOTIFICATION_ID, notification, FOREGROUND_SERVICE_TYPE_LOCATION)
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        } else {
             startForeground(NOTIFICATION_ID, notification)
         }
         if (!sharedPref.getBoolean("enabledChecked", true)) {
@@ -84,10 +87,10 @@ class BackgroundLocationService : Service() {
         return START_STICKY
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channelId = "1"
-            val channelName = "Foreground Service Channel"
+        val channelId = "1"
+        val channelName = "Foreground Service Channel"
             val channel = NotificationChannel(
                 channelId,
                 channelName,
@@ -95,11 +98,10 @@ class BackgroundLocationService : Service() {
             )
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(channel)
-        }
     }
 
     private fun getNotification(): Notification {
-        val channelId = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) "1" else ""
+        val channelId = "1"
 
         val intent = packageManager.getLaunchIntentForPackage(packageName)
         intent?.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

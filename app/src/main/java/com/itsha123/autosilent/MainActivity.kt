@@ -12,7 +12,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.navigation.compose.NavHost
@@ -36,17 +35,18 @@ import com.itsha123.autosilent.utilities.permsCheck
 
 class MainActivity : ComponentActivity() {
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         val sharedPref = getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
         super.onCreate(savedInstanceState)
         if (permsCheck(this)) {
             val serviceIntent = Intent(this, BackgroundLocationService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 if (!isServiceRunning(BackgroundLocationService::class.java, this)) {
-                    startForegroundService(serviceIntent)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        startForegroundService(serviceIntent)
+                    } else {
+                        startService(serviceIntent)
+                    }
                 }
-            }
         } else {
             with(sharedPref.edit()) {
                 putBoolean("firstRun", true)

@@ -11,7 +11,6 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -40,7 +39,6 @@ import com.itsha123.autosilent.utilities.isServiceRunning
 import com.itsha123.autosilent.utilities.permsCheck
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainScreen(navController: NavController, context: Context) {
     val showDialog = remember { mutableStateOf(false) }
@@ -143,12 +141,21 @@ fun MainScreen(navController: NavController, context: Context) {
                     navController.navigate(Routes.NOTIFICATIONPERMISSION)
                 }
                 if (!isServiceRunning(BackgroundLocationService::class.java, context)) {
-                    context.startForegroundService(
-                        Intent(
-                            context,
-                            BackgroundLocationService::class.java
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        context.startForegroundService(
+                            Intent(
+                                context,
+                                BackgroundLocationService::class.java
+                            )
                         )
-                    )
+                    } else {
+                        context.startService(
+                            Intent(
+                                context,
+                                BackgroundLocationService::class.java
+                            )
+                        )
+                    }
                 }
             }
         }
@@ -158,12 +165,21 @@ fun MainScreen(navController: NavController, context: Context) {
                     context.stopService(Intent(context, BackgroundLocationService::class.java))
                     serviceui.value = false
                 } else {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         context.startForegroundService(
                             Intent(
                                 context,
                                 BackgroundLocationService::class.java
                             )
                         )
+                    } else {
+                        context.startService(
+                            Intent(
+                                context,
+                                BackgroundLocationService::class.java
+                            )
+                        )
+                    }
                     serviceui.value = true
                 }
                 if (!context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)

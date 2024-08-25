@@ -4,9 +4,9 @@ import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
 import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -29,13 +29,12 @@ import com.itsha123.autosilent.ui.theme.AutoSilentTheme
 import com.itsha123.autosilent.utilities.isServiceRunning
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GeneralSettingsScreen(navController: NavController? = null, context: Context? = null) {
-    Scaffold {
+    Scaffold { innerPadding ->
         val sharedPref = context?.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
-        Column {
+        Column(Modifier.padding(innerPadding)) {
             MediumTopAppBar(
                 title = { Text(stringResource(R.string.general_settings_title)) },
                 navigationIcon = {
@@ -64,12 +63,21 @@ fun GeneralSettingsScreen(navController: NavController? = null, context: Context
                                     context!!
                                 )
                             ) {
-                                context.startForegroundService(
-                                    Intent(
-                                        context,
-                                        BackgroundLocationService::class.java
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    context.startForegroundService(
+                                        Intent(
+                                            context,
+                                            BackgroundLocationService::class.java
+                                        )
                                     )
-                                )
+                                } else {
+                                    context.startService(
+                                        Intent(
+                                            context,
+                                            BackgroundLocationService::class.java
+                                        )
+                                    )
+                                }
                             }
                         } else {
                             context?.stopService(
@@ -116,7 +124,6 @@ fun GeneralSettingsScreen(navController: NavController? = null, context: Context
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true)
 @Composable
 fun GeneralSettingsScreenPreview() {
