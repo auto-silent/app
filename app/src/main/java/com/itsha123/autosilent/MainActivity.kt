@@ -90,7 +90,7 @@ class MainActivity : ComponentActivity() {
                     }
                 ) {
                     composable(Routes.MAIN) {
-                        MainScreen(navController, this@MainActivity, this@MainActivity)
+                        MainScreen(navController, this@MainActivity)
                     }
                     composable(Routes.SETTINGS) {
                         SettingsScreen(navController, this@MainActivity)
@@ -133,7 +133,9 @@ class MainActivity : ComponentActivity() {
                         NotificationsPermissionRequestScreen(navController, this@MainActivity) {
                             recompose.value = !recompose.value
                             if (sharedPref.getInt("notificationRequests", 0) < 2) {
-                                launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                }
                             } else {
                                 val intent =
                                     Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -161,6 +163,7 @@ class MainActivity : ComponentActivity() {
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         serviceui.value = isServiceRunning(BackgroundLocationService::class.java, this)
+        recompose.value = !recompose.value
     }
 }
 

@@ -131,7 +131,7 @@ class BackgroundLocationService : Service() {
             .setContentIntent(pendingIntent)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .addAction(
-                R.drawable.ic_launcher_foreground,
+                R.mipmap.ic_launcher_foreground,
                 getString(R.string.turn_off),
                 stopPendingIntent
             ) // Add stop action

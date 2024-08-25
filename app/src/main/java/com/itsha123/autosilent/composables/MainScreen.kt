@@ -23,7 +23,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavController
-import com.itsha123.autosilent.MainActivity
 import com.itsha123.autosilent.R
 import com.itsha123.autosilent.composables.permissions.BackgroundLocationPermissionRequestScreen
 import com.itsha123.autosilent.composables.permissions.DNDPermissionRequestScreen
@@ -43,7 +42,7 @@ import com.itsha123.autosilent.utilities.permsCheck
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MainScreen(navController: NavController, context: Context, activity: MainActivity) {
+fun MainScreen(navController: NavController, context: Context) {
     val showDialog = remember { mutableStateOf(false) }
     if (showDialog.value) {
         AlertDialog(onDismissRequest = { showDialog.value = false }, text = {
@@ -62,6 +61,10 @@ fun MainScreen(navController: NavController, context: Context, activity: MainAct
         })
 
     }
+    val settingsActivityResultLauncher: ActivityResultLauncher<Intent> =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            recompose.value = !recompose.value
+        }
     val sharedPref = context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
     recompose.collectAsState().value
     val notificationManager =
@@ -84,9 +87,8 @@ fun MainScreen(navController: NavController, context: Context, activity: MainAct
                         )
                     }.apply()
                 }
+                recompose.value = !recompose.value
             }
-        val settingsActivityResultLauncher: ActivityResultLauncher<Intent> =
-            rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
         LocationPermissionRequestScreen(context) {
             if (sharedPref.getInt("fineLocationRequests", 0) < 2) {
                 launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -99,7 +101,7 @@ fun MainScreen(navController: NavController, context: Context, activity: MainAct
         }
     } else if (ActivityCompat.checkSelfPermission(
             context, Manifest.permission.ACCESS_BACKGROUND_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED
+        ) != PackageManager.PERMISSION_GRANTED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
     ) {
         val launcher =
             rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
@@ -111,9 +113,8 @@ fun MainScreen(navController: NavController, context: Context, activity: MainAct
                         )
                     }.apply()
                 }
+                recompose.value = !recompose.value
             }
-        val settingsActivityResultLauncher: ActivityResultLauncher<Intent> =
-            rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
         BackgroundLocationPermissionRequestScreen(context) {
             if (sharedPref.getInt("backgroundLocationRequests", 0) < 2) {
                 launcher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
