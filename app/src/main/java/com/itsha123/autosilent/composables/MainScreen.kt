@@ -34,7 +34,7 @@ import com.itsha123.autosilent.singletons.Variables.geofenceData
 import com.itsha123.autosilent.singletons.Variables.internet
 import com.itsha123.autosilent.singletons.Variables.location
 import com.itsha123.autosilent.singletons.Variables.recompose
-import com.itsha123.autosilent.singletons.Variables.serviceui
+import com.itsha123.autosilent.singletons.Variables.service
 import com.itsha123.autosilent.utilities.isServiceRunning
 import com.itsha123.autosilent.utilities.permsCheck
 
@@ -161,10 +161,9 @@ fun MainScreen(navController: NavController, context: Context) {
         }
         UI(
             {
-                android.os.Process.killProcess(android.os.Process.myPid())
                 if (isServiceRunning(BackgroundLocationService::class.java, context)) {
                     context.stopService(Intent(context, BackgroundLocationService::class.java))
-                    serviceui.value = false
+                    service.value = false
                 } else {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         context.startForegroundService(
@@ -181,7 +180,7 @@ fun MainScreen(navController: NavController, context: Context) {
                             )
                         )
                     }
-                    serviceui.value = true
+                    service.value = true
                 }
                 if (!context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
                         .getBoolean("enabledChecked", true)
@@ -196,7 +195,7 @@ fun MainScreen(navController: NavController, context: Context) {
                         true
                     ) -> stringResource(R.string.service_not_running)
 
-                !serviceui.collectAsState().value -> stringResource(R.string.service_not_running)
+                !service.collectAsState().value -> stringResource(R.string.service_not_running)
                 !location.collectAsState().value -> stringResource(R.string.location_disabled)
                 geofence.collectAsState().value -> stringResource(
                     R.string.current_masjid_details,

@@ -24,7 +24,7 @@ import com.itsha123.autosilent.R
 import com.itsha123.autosilent.composables.settings.components.SettingsItemIconDesc
 import com.itsha123.autosilent.services.location.BackgroundLocationService
 import com.itsha123.autosilent.singletons.Routes
-import com.itsha123.autosilent.singletons.Variables.serviceui
+import com.itsha123.autosilent.singletons.Variables.service
 import com.itsha123.autosilent.utilities.isServiceRunning
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,7 +37,7 @@ fun SettingsScreen(navController: NavController? = null, context: Context? = nul
                 navigationIcon = {
                     IconButton(onClick = {
                         navController?.popBackStack()
-                        serviceui.value =
+                        service.value =
                             isServiceRunning(BackgroundLocationService::class.java, context!!)
                     }) {
                         Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")

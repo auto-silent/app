@@ -11,6 +11,6 @@ object Variables {
     var internet = MutableStateFlow(true)
     var recompose = MutableStateFlow(false)
     var location = MutableStateFlow(true)
-    var serviceui = MutableStateFlow(true)
+    var service = MutableStateFlow(true)
     var ringerMode = MutableStateFlow(RINGER_MODE_NORMAL)
 }

@@ -27,7 +27,7 @@ import com.itsha123.autosilent.composables.settings.SettingsScreen
 import com.itsha123.autosilent.services.location.BackgroundLocationService
 import com.itsha123.autosilent.singletons.Routes
 import com.itsha123.autosilent.singletons.Variables.recompose
-import com.itsha123.autosilent.singletons.Variables.serviceui
+import com.itsha123.autosilent.singletons.Variables.service
 import com.itsha123.autosilent.ui.theme.AutoSilentTheme
 import com.itsha123.autosilent.utilities.isServiceRunning
 import com.itsha123.autosilent.utilities.permsCheck
@@ -54,9 +54,9 @@ class MainActivity : ComponentActivity() {
             }
         }
         if (isServiceRunning(BackgroundLocationService::class.java, this)) {
-            serviceui.value = true
+            service.value = true
         } else {
-            serviceui.value = false
+            service.value = false
         }
         setContent {
             AutoSilentTheme {
@@ -156,13 +156,13 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        serviceui.value = isServiceRunning(BackgroundLocationService::class.java, this)
+        service.value = isServiceRunning(BackgroundLocationService::class.java, this)
         recompose.value = !recompose.value
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        serviceui.value = isServiceRunning(BackgroundLocationService::class.java, this)
+        service.value = isServiceRunning(BackgroundLocationService::class.java, this)
         recompose.value = !recompose.value
     }
 }

@@ -25,7 +25,8 @@ import com.itsha123.autosilent.R
 import com.itsha123.autosilent.composables.settings.components.SettingsItemDropdown
 import com.itsha123.autosilent.composables.settings.components.SettingsItemSwitch
 import com.itsha123.autosilent.services.location.BackgroundLocationService
-import com.itsha123.autosilent.singletons.Variables.serviceui
+import com.itsha123.autosilent.singletons.Variables.geofence
+import com.itsha123.autosilent.singletons.Variables.service
 import com.itsha123.autosilent.ui.theme.AutoSilentTheme
 import com.itsha123.autosilent.utilities.isServiceRunning
 
@@ -41,7 +42,7 @@ fun GeneralSettingsScreen(navController: NavController? = null, context: Context
                 navigationIcon = {
                     IconButton(onClick = {
                         navController?.popBackStack()
-                        serviceui.value =
+                        service.value =
                             isServiceRunning(BackgroundLocationService::class.java, context!!)
                     }) {
                         Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
@@ -103,17 +104,24 @@ fun GeneralSettingsScreen(navController: NavController? = null, context: Context
                                 }
                                 vibrateChecked = !vibrateChecked!!
                                 if (vibrateChecked == true) {
-                                    val audioManager =
-                                        context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                                    if (audioManager.ringerMode == AudioManager.RINGER_MODE_SILENT) {
-                                        audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
+                                    if (geofence.value) {
+                                        val audioManager =
+                                            context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                                        if (audioManager.ringerMode == AudioManager.RINGER_MODE_SILENT) {
+                                            audioManager.ringerMode =
+                                                AudioManager.RINGER_MODE_VIBRATE
+                                        }
                                     }
                                 } else {
-                                    val audioManager =
-                                        context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                                    if (audioManager.ringerMode == AudioManager.RINGER_MODE_VIBRATE) {
-                                        audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
-                                        audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+                                    if (geofence.value) {
+                                        val audioManager =
+                                            context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                                        if (audioManager.ringerMode == AudioManager.RINGER_MODE_VIBRATE) {
+                                            audioManager.ringerMode =
+                                                AudioManager.RINGER_MODE_NORMAL
+                                            audioManager.ringerMode =
+                                                AudioManager.RINGER_MODE_SILENT
+                                        }
                                     }
                                 }
                             }

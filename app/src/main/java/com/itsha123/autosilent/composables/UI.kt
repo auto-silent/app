@@ -29,7 +29,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.itsha123.autosilent.R
 import com.itsha123.autosilent.singletons.Variables.internet
-import com.itsha123.autosilent.singletons.Variables.serviceui
+import com.itsha123.autosilent.singletons.Variables.service
 import com.itsha123.autosilent.ui.theme.AutoSilentTheme
 
 @Composable
@@ -86,7 +86,7 @@ fun UI(
                 onClick()
             }) {
                 Text(
-                    if (serviceui.collectAsState().value) stringResource(R.string.turn_off) else stringResource(
+                    if (service.collectAsState().value) stringResource(R.string.turn_off) else stringResource(
                         R.string.turn_on
                     )
                 )
