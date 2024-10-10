@@ -161,6 +161,7 @@ fun MainScreen(navController: NavController, context: Context) {
         }
         UI(
             {
+                android.os.Process.killProcess(android.os.Process.myPid())
                 if (isServiceRunning(BackgroundLocationService::class.java, context)) {
                     context.stopService(Intent(context, BackgroundLocationService::class.java))
                     serviceui.value = false
@@ -189,6 +190,13 @@ fun MainScreen(navController: NavController, context: Context) {
                 }
             },
             when {
+                !context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
+                    .getBoolean(
+                        "enabledChecked",
+                        true
+                    ) -> stringResource(R.string.service_not_running)
+
+                !serviceui.collectAsState().value -> stringResource(R.string.service_not_running)
                 !location.collectAsState().value -> stringResource(R.string.location_disabled)
                 geofence.collectAsState().value -> stringResource(
                     R.string.current_masjid_details,
@@ -207,7 +215,7 @@ fun MainScreen(navController: NavController, context: Context) {
                         Uri.parse(context.getString(R.string.database_issue_link))
                     ), null
                 )
-            }, navController, context
+            }, navController
         )
     }
 

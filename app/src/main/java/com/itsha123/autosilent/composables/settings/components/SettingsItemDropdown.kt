@@ -9,10 +9,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,8 +30,9 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsItemSwitch(
+fun SettingsItemDropdown(
     title: String,
     context: Context? = null,
     onCheck: () -> Unit,
@@ -37,6 +42,9 @@ fun SettingsItemSwitch(
     val sharedPref = context?.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
     var clicked by remember { mutableStateOf(false) }
     var isChecked by remember { mutableStateOf(true) }// State to manage Switch checked state
+    val options = listOf("Silent", "Vibrate")
+    var expanded by remember { mutableStateOf(false) }
+    var text by remember { mutableStateOf(options[0]) }
     if (sharedPref != null) {
         isChecked = sharedPref.getBoolean(syncedVariable, defValue)
     }
@@ -60,13 +68,40 @@ fun SettingsItemSwitch(
             Text(text = title, fontSize = 18.sp)
         }
         Spacer(modifier = Modifier.weight(1f)) // Spacer with flexible weight to push the Switch to the right
-        Switch(
-            colors = SwitchDefaults.colors(checkedTrackColor = MaterialTheme.colorScheme.primary),
-            checked = isChecked,
-            onCheckedChange = {
-            isChecked = it
-            onCheck()
-        }) // Update isChecked state on change
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = it },
+        ) {
+            TextField(
+                // The `menuAnchor` modifier must be passed to the text field to handle
+                // expanding/collapsing the menu on click. A read-only text field has
+                // the anchor type `PrimaryNotEditable`.
+                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                value = text,
+                onValueChange = {},
+                readOnly = true,
+                singleLine = true,
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                colors = ExposedDropdownMenuDefaults.textFieldColors(),
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+            ) {
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option, style = MaterialTheme.typography.bodyLarge) },
+                        onClick = {
+                            text = option
+                            expanded = false
+                            isChecked = option == "Silent"
+                            onCheck()
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                    )
+                }
+            }
+        }
     }
 
     LaunchedEffect(clicked) {

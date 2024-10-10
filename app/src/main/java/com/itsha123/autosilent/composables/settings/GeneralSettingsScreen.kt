@@ -22,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import com.itsha123.autosilent.R
+import com.itsha123.autosilent.composables.settings.components.SettingsItemDropdown
 import com.itsha123.autosilent.composables.settings.components.SettingsItemSwitch
 import com.itsha123.autosilent.services.location.BackgroundLocationService
 import com.itsha123.autosilent.singletons.Variables.serviceui
@@ -90,7 +91,7 @@ fun GeneralSettingsScreen(navController: NavController? = null, context: Context
                     }, "enabledChecked", true)
                 }
                 item {
-                    SettingsItemSwitch(
+                    SettingsItemDropdown(
                         title = stringResource(R.string.vibrate_toggle_title),
                         context,
                         onCheck = {

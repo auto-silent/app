@@ -1,6 +1,5 @@
 package com.itsha123.autosilent.composables
 
-import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,8 +38,7 @@ fun UI(
     geofenceText: String,
     inGeofence: Boolean,
     link: () -> Unit,
-    navController: NavController,
-    context: Context? = null
+    navController: NavController
 ) {
     Scaffold(floatingActionButton = {
         Column(horizontalAlignment = Alignment.End, modifier = Modifier.fillMaxSize()) {
@@ -54,7 +52,7 @@ fun UI(
                 Icon(Icons.Rounded.Settings, contentDescription = "Settings")
             }
         }
-    }, floatingActionButtonPosition = FabPosition.Start) {
+    }, floatingActionButtonPosition = FabPosition.Start) { innerPadding ->
         val showDialog = remember { mutableStateOf(false) }
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -71,7 +69,7 @@ fun UI(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Bottom
         ) {

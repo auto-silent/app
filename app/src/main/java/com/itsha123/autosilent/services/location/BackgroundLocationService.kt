@@ -84,7 +84,7 @@ class BackgroundLocationService : Service() {
             stopSelf()
         }
         handler.post(runnable)
-        return START_STICKY
+        return START_REDELIVER_INTENT
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
