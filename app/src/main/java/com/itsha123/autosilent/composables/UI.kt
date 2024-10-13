@@ -84,7 +84,7 @@ fun UI(
             }
             Button(onClick = {
                 onClick()
-            }) {
+            }, modifier = Modifier.padding(bottom = 16.dp)) {
                 Text(
                     if (service.collectAsState().value) stringResource(R.string.turn_off) else stringResource(
                         R.string.turn_on
