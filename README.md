@@ -21,3 +21,5 @@ Or go to the Releases tab and download the latest release.
 
 Auto Silent checks your location every 15 seconds and checks against the phone's cache to see if you're in a masjid. The cache is updated every 24 hours from the database.  
 Auto Silent uses this database: [Auto Silent Database](https://github.com/Auto-Silent/Auto-Silent-Database)
+
+Google Play is a trademark of Google LLC.
