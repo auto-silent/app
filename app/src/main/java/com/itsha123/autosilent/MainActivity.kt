@@ -10,6 +10,7 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -38,15 +39,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val sharedPref = getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         if (permsCheck(this)) {
             val serviceIntent = Intent(this, BackgroundLocationService::class.java)
-                if (!isServiceRunning(BackgroundLocationService::class.java, this)) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        startForegroundService(serviceIntent)
-                    } else {
-                        startService(serviceIntent)
-                    }
+            if (!isServiceRunning(BackgroundLocationService::class.java, this)) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(serviceIntent)
+                } else {
+                    startService(serviceIntent)
                 }
+            }
         } else {
             with(sharedPref.edit()) {
                 putBoolean("firstRun", true)

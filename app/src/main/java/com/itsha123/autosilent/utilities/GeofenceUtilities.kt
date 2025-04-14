@@ -172,7 +172,7 @@ fun fetchLocationFromInternet(userLat: Double, userLong: Double, context: Contex
         Log.i("geofenceEvent", "Fetching location data")
         val client = OkHttpClient()
         val request = Request.Builder()
-            .url("https://raw.githubusercontent.com/Auto-Silent/Auto-Silent-Database/main/${userLat.toInt()}%2C%20${userLong.toInt()}.csv")
+            .url("https://raw.githubusercontent.com/auto-silent/database/main/${userLat.toInt()}%2C%20${userLong.toInt()}.csv")
             .build()
         try {
             val response = client.newCall(request).execute()

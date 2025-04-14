@@ -24,8 +24,8 @@
     <string name="update_cache_button">Update Cache</string>
     <string name="faq_page_title">Frequently Asked Questions</string>
     <string name="feedback_button_text">Send Feedback</string>
-    <string name="app_issues_link">https://github.com/Auto-Silent/Auto-Silent/issues</string>
-    <string name="database_issue_link">https://github.com/itsha123/Auto-Silent-Database/issues</string>
+    <string name="app_issues_link">https://github.com/auto-silent/app/issues</string>
+    <string name="database_issue_link">https://github.com/auto-silent/database/issues</string>
     <string name="faq_question_how_to_disable_auto_silent">How do I disable Auto Silent?</string>
     <string name="faq_answer_how_to_disable_auto_silent">To temporarily disable Auto Silent until you reopen the app or restart your device, tap the "Turn Off" button in the main menu. For a permanent disable, go to Settings > General > Disable Auto Silent.</string>
     <string name="no_internet_no_cache">No internet connection and no local backup available for your area.</string>

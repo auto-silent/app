@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -40,7 +39,7 @@ fun CacheSettingsScreen(navController: NavController? = null, context: Context? 
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { innerPadding ->
-        Column(Modifier.padding(innerPadding)) {
+        Column {
         MediumTopAppBar(
             title = { Text(stringResource(R.string.cache_settings_title)) },
             navigationIcon = {
@@ -71,7 +70,7 @@ fun CacheSettingsScreen(navController: NavController? = null, context: Context? 
                             if (filename != "profileInstalled") {
                                 Log.d("cacheSettingsScreen", "Checking $filename")
                                 val request = Request.Builder()
-                                    .url("https://raw.githubusercontent.com/Auto-Silent/Auto-Silent-Database/main/$filename")
+                                    .url("https://raw.githubusercontent.com/auto-silent/database/main/$filename")
                                     .build()
 
                                 try {

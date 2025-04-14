@@ -35,18 +35,20 @@ import androidx.compose.ui.unit.sp
 fun SettingsItemDropdown(
     title: String,
     context: Context? = null,
-    onCheck: () -> Unit,
     syncedVariable: String,
-    defValue: Boolean
+    defValue: Boolean,
+    options: List<String>,
+    onCheck: () -> Unit
 ) {
     val sharedPref = context?.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
     var clicked by remember { mutableStateOf(false) }
-    var isChecked by remember { mutableStateOf(true) }// State to manage Switch checked state
-    val options = listOf("Silent", "Vibrate")
+    val startOption = sharedPref?.getBoolean(syncedVariable, defValue)
     var expanded by remember { mutableStateOf(false) }
-    var text by remember { mutableStateOf(options[0]) }
-    if (sharedPref != null) {
-        isChecked = sharedPref.getBoolean(syncedVariable, defValue)
+    var text by remember { mutableStateOf<String?>(null) }
+    if (startOption == true) {
+        text = options[1]
+    } else {
+        text = options[0]
     }
     val scale = animateFloatAsState(targetValue = if (clicked) 0.95f else 1f)
 
@@ -77,7 +79,7 @@ fun SettingsItemDropdown(
                 // expanding/collapsing the menu on click. A read-only text field has
                 // the anchor type `PrimaryNotEditable`.
                 modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
-                value = text,
+                value = text!!,
                 onValueChange = {},
                 readOnly = true,
                 singleLine = true,
@@ -94,7 +96,6 @@ fun SettingsItemDropdown(
                         onClick = {
                             text = option
                             expanded = false
-                            isChecked = option == "Silent"
                             onCheck()
                         },
                         contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,

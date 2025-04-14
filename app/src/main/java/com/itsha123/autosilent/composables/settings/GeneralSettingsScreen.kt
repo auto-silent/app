@@ -6,7 +6,6 @@ import android.media.AudioManager
 import android.os.Build
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -36,7 +35,7 @@ import com.itsha123.autosilent.utilities.isServiceRunning
 fun GeneralSettingsScreen(navController: NavController? = null, context: Context? = null) {
     Scaffold { innerPadding ->
         val sharedPref = context?.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
-        Column(Modifier.padding(innerPadding)) {
+        Column {
             MediumTopAppBar(
                 title = { Text(stringResource(R.string.general_settings_title)) },
                 navigationIcon = {
@@ -61,22 +60,19 @@ fun GeneralSettingsScreen(navController: NavController? = null, context: Context
                         }
                         if (enabledChecked == true) {
                             if (!isServiceRunning(
-                                    BackgroundLocationService::class.java,
-                                    context!!
+                                    BackgroundLocationService::class.java, context!!
                                 )
                             ) {
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                                     context.startForegroundService(
                                         Intent(
-                                            context,
-                                            BackgroundLocationService::class.java
+                                            context, BackgroundLocationService::class.java
                                         )
                                     )
                                 } else {
                                     context.startService(
                                         Intent(
-                                            context,
-                                            BackgroundLocationService::class.java
+                                            context, BackgroundLocationService::class.java
                                         )
                                     )
                                 }
@@ -84,8 +80,7 @@ fun GeneralSettingsScreen(navController: NavController? = null, context: Context
                         } else {
                             context?.stopService(
                                 Intent(
-                                    context,
-                                    BackgroundLocationService::class.java
+                                    context, BackgroundLocationService::class.java
                                 )
                             )
                         }
@@ -93,40 +88,39 @@ fun GeneralSettingsScreen(navController: NavController? = null, context: Context
                 }
                 item {
                     SettingsItemDropdown(
-                        title = stringResource(R.string.vibrate_toggle_title),
+                        stringResource(R.string.vibrate_toggle_title),
                         context,
-                        onCheck = {
-                            var vibrateChecked = sharedPref?.getBoolean("vibrateChecked", false)
-                            if (sharedPref != null) {
-                                with(sharedPref.edit()) {
-                                    putBoolean("vibrateChecked", !vibrateChecked!!)
-                                    apply()
-                                }
-                                vibrateChecked = !vibrateChecked!!
-                                if (vibrateChecked == true) {
-                                    if (geofence.value) {
-                                        val audioManager =
-                                            context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                                        if (audioManager.ringerMode == AudioManager.RINGER_MODE_SILENT) {
-                                            audioManager.ringerMode =
-                                                AudioManager.RINGER_MODE_VIBRATE
-                                        }
+                        "vibrateChecked",
+                        false,
+                        listOf("Silent", "Vibrate")
+                    ) {
+                        var vibrateChecked = sharedPref?.getBoolean("vibrateChecked", false)
+                        if (sharedPref != null) {
+                            with(sharedPref.edit()) {
+                                putBoolean("vibrateChecked", !vibrateChecked!!)
+                                apply()
+                            }
+                            vibrateChecked = !vibrateChecked!!
+                            if (vibrateChecked == true) {
+                                if (geofence.value) {
+                                    val audioManager =
+                                        context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                                    if (audioManager.ringerMode == AudioManager.RINGER_MODE_SILENT) {
+                                        audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
                                     }
-                                } else {
-                                    if (geofence.value) {
-                                        val audioManager =
-                                            context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                                        if (audioManager.ringerMode == AudioManager.RINGER_MODE_VIBRATE) {
-                                            audioManager.ringerMode =
-                                                AudioManager.RINGER_MODE_NORMAL
-                                            audioManager.ringerMode =
-                                                AudioManager.RINGER_MODE_SILENT
-                                        }
+                                }
+                            } else {
+                                if (geofence.value) {
+                                    val audioManager =
+                                        context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                                    if (audioManager.ringerMode == AudioManager.RINGER_MODE_VIBRATE) {
+                                        audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
+                                        audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
                                     }
                                 }
                             }
-                        }, "vibrateChecked", false
-                    )
+                        }
+                    }
                 }
             }
         }

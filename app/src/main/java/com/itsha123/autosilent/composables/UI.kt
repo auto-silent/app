@@ -2,8 +2,11 @@ package com.itsha123.autosilent.composables
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.AlertDialog
@@ -28,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.itsha123.autosilent.R
+import com.itsha123.autosilent.singletons.Routes
 import com.itsha123.autosilent.singletons.Variables.internet
 import com.itsha123.autosilent.singletons.Variables.service
 import com.itsha123.autosilent.ui.theme.AutoSilentTheme
@@ -44,9 +48,11 @@ fun UI(
         Column(horizontalAlignment = Alignment.End, modifier = Modifier.fillMaxSize()) {
             FloatingActionButton(
                 onClick = {
-                    navController.navigate("settings")
+                    navController.navigate(Routes.SETTINGS)
                 },
-                modifier = Modifier.padding(32.dp),
+                modifier = Modifier
+                    .padding(WindowInsets.systemBars.asPaddingValues())
+                    .padding(32.dp),
                 containerColor = MaterialTheme.colorScheme.secondary
             ) {
                 Icon(Icons.Rounded.Settings, contentDescription = "Settings")
