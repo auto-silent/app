@@ -17,7 +17,8 @@
     <string name="grant_permission">Grant Permission</string>
     <string name="notifications_permission_rationale">Allow notifications to receive status updates? You can change this later in your phone\'s settings.</string>
     <string name="precise_location_permission_rationale">Precise Location access is required for core functionality. Please grant this permission.</string>
-    <string name="dnd_permission_rationale">Do Not Disturb access is needed to change your phone\'s ringer mode. Please grant this permission.</string>
+    <string name="dnd_permission_rationale_legacy">Do Not Disturb access is needed to change your phone\'s ringer mode. Please grant this permission.</string>
+    <string name="dnd_permission_rationale">Modes access is needed to change your phone\'s ringer mode. Please grant this permission.</string>
     <string name="background_location_permission_rationale">Background Location access is essential for core functionality. Please select "Allow all the time".</string>
     <string name="help_settings_title">Help</string>
     <string name="help_settings_desc">FAQ and Feedback</string>

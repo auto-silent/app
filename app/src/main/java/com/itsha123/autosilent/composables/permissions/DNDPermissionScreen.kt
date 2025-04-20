@@ -1,5 +1,6 @@
 package com.itsha123.autosilent.composables.permissions
 
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,7 +29,11 @@ fun DNDPermissionRequestScreen(onRequestPermission: () -> Unit) {
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                stringResource(R.string.dnd_permission_rationale),
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+                    stringResource(R.string.dnd_permission_rationale)
+                } else {
+                    stringResource(R.string.dnd_permission_rationale_legacy)
+                },
                 modifier = Modifier.padding(16.dp),
                 textAlign = TextAlign.Center
             )
