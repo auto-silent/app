@@ -8,4 +8,5 @@ object Routes {
     const val HELP = "help"
     const val FAQ = "faq"
     const val NOTIFICATIONPERMISSION = "notificationPermission"
+    const val FEEDBACK = "feedback"
 }

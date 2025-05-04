@@ -29,7 +29,7 @@ fun NotificationsPermissionRequestScreen(
     context: Context? = null,
     onRequestPermission: () -> Unit
 ) {
-    Scaffold {
+    Scaffold { innerPadding ->
         val sharedPref = context?.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
         recompose.collectAsState().value
         Column(
@@ -46,7 +46,7 @@ fun NotificationsPermissionRequestScreen(
                 onRequestPermission()
             }) {
                 Text(
-                    if (sharedPref!!.getInt("notificationRequests", 0) < 2) {
+                    if ((sharedPref?.getInt("notificationRequests", 0) ?: 0) < 2) {
                         stringResource(R.string.grant_permission)
                     } else {
                         stringResource(R.string.open_settings_permission)
@@ -57,7 +57,7 @@ fun NotificationsPermissionRequestScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Bottom
         ) {

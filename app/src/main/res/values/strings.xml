@@ -4,6 +4,7 @@
     <string name="close">Close</string>
     <string name="masjid_not_in_database_popup">Your masjid is not in our database. Please visit our GitHub page to help us add it.</string>
     <string name="open_github">Open GitHub</string>
+    <string name="continue_text">Continue</string>
     <string name="turn_off">Turn Off</string>
     <string name="turn_on">Turn On</string>
     <string name="in_masjid_question">Are you in a masjid?</string>
@@ -40,4 +41,12 @@
     <string name="enable_app">Auto Silent is currently disabled. Please go to settings to re-enable it.</string>
     <string name="go_to_settings">Go to Settings</string>
     <string name="service_not_running">App is off.</string>
+    <string name="feedback_type_prompt">What type of feedback do you want to give?</string>
+    <string name="bug_report">Bug Report</string>
+    <string name="feature_request">Feature Request</string>
+    <string name="other_feedback">Other</string>
+    <string name="no_github">Can\'t use GitHub?</string>
+    <string name="send_email">Send Email</string>
+    <string name="no_github_dialog">No GitHub? No problem! Send an email to autosilentapp@gmail.com with your feedback.</string>
+    <string name="feedback_send_email_prompt">Send an email to autosilentapp@gmail.com with your feedback.</string>
 </resources>

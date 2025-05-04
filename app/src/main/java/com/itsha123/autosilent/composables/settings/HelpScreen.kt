@@ -1,10 +1,7 @@
 package com.itsha123.autosilent.composables.settings
 
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -20,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavController
 import com.itsha123.autosilent.R
 import com.itsha123.autosilent.composables.settings.components.SettingsItemButton
@@ -28,9 +24,9 @@ import com.itsha123.autosilent.singletons.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HelpScreen(navController: NavController? = null, context: Context? = null) {
-    Scaffold {
-        Column {
+fun HelpScreen(navController: NavController? = null) {
+    Scaffold(
+        topBar = {
             MediumTopAppBar(
                 title = { Text(stringResource(R.string.help_settings_title)) },
                 navigationIcon = {
@@ -39,26 +35,27 @@ fun HelpScreen(navController: NavController? = null, context: Context? = null) {
                     }) {
                         Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
                     }
-                })
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                item {
-                    SettingsItemButton(
-                        stringResource(R.string.faq_page_title),
-                        Icons.AutoMirrored.Rounded.Help
-                    ) {
-                        navController?.navigate(Routes.FAQ)
-                    }
-                    SettingsItemButton(
-                        stringResource(R.string.feedback_button_text),
-                        Icons.Rounded.Feedback
-                    ) {
-                        startActivity(
-                            context!!, Intent(
-                                Intent.ACTION_VIEW,
-                                Uri.parse(context.getString(R.string.app_issues_link))
-                            ), null
-                        )
-                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            item {
+                SettingsItemButton(
+                    stringResource(R.string.faq_page_title),
+                    Icons.AutoMirrored.Rounded.Help
+                ) {
+                    navController?.navigate(Routes.FAQ)
+                }
+                SettingsItemButton(
+                    stringResource(R.string.feedback_button_text),
+                    Icons.Rounded.Feedback
+                ) {
+                    navController?.navigate(Routes.FEEDBACK)
                 }
             }
         }

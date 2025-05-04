@@ -15,6 +15,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.core.content.edit
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -22,6 +23,7 @@ import com.itsha123.autosilent.composables.MainScreen
 import com.itsha123.autosilent.composables.permissions.NotificationsPermissionRequestScreen
 import com.itsha123.autosilent.composables.settings.CacheSettingsScreen
 import com.itsha123.autosilent.composables.settings.FAQScreen
+import com.itsha123.autosilent.composables.settings.FeedbackScreen
 import com.itsha123.autosilent.composables.settings.GeneralSettingsScreen
 import com.itsha123.autosilent.composables.settings.HelpScreen
 import com.itsha123.autosilent.composables.settings.SettingsScreen
@@ -104,10 +106,13 @@ class MainActivity : ComponentActivity() {
                         CacheSettingsScreen(navController, this@MainActivity)
                     }
                     composable(Routes.HELP) {
-                        HelpScreen(navController, this@MainActivity)
+                        HelpScreen(navController)
                     }
                     composable(Routes.FAQ) {
                         FAQScreen(navController)
+                    }
+                    composable(Routes.FEEDBACK) {
+                        FeedbackScreen(this@MainActivity)
                     }
                     composable(Routes.NOTIFICATIONPERMISSION) {
                         val launcher =
@@ -117,12 +122,12 @@ class MainActivity : ComponentActivity() {
                                         0
                                     ) < 2
                                 ) {
-                                    with(sharedPref.edit()) {
+                                    sharedPref.edit {
                                         putInt(
                                             "notificationRequests",
                                             sharedPref.getInt("notificationRequests", 0) + 1
                                         )
-                                    }.apply()
+                                    }
                                 }
                                 if (isGranted) {
                                     navController.popBackStack()
