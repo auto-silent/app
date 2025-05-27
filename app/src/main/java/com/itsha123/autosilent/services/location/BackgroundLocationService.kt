@@ -121,13 +121,14 @@ class BackgroundLocationService : Service() {
                 when {
                     !location.value -> this.getString(R.string.location_disabled)
                     geofence.value -> this.getString(
-                        R.string.current_masjid_details,
+                        R.string.current_mosque_details,
                         geofenceData!!.name!!,
                         geofenceData!!.address!!
                     )
-                    !database.value -> this.getString(R.string.masjid_not_in_database_status)
+
+                    !database.value -> this.getString(R.string.mosque_not_in_database_status)
                     !internet.value -> this.getString(R.string.no_internet_no_cache)
-                    else -> this.getString(R.string.not_in_masjid)
+                    else -> this.getString(R.string.not_in_mosque)
                 }
             )
             .setSmallIcon(R.mipmap.ic_launcher_foreground)

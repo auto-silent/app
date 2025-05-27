@@ -10,9 +10,11 @@ import androidx.compose.material.icons.rounded.Feedback
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -28,6 +30,7 @@ fun HelpScreen(navController: NavController? = null) {
     Scaffold(
         topBar = {
             MediumTopAppBar(
+                colors = TopAppBarDefaults.largeTopAppBarColors(containerColor = MaterialTheme.colorScheme.background),
                 title = { Text(stringResource(R.string.help_settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = {

@@ -82,7 +82,7 @@ fun UI(
             if (!inGeofence && internet.collectAsState().value) {
                 TextButton(onClick = { showDialog.value = true }) {
                     Text(
-                        stringResource(R.string.in_masjid_question),
+                        stringResource(R.string.in_mosque_question),
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -99,13 +99,13 @@ fun UI(
             }
             if (showDialog.value) {
                 AlertDialog(onDismissRequest = { showDialog.value = false }, text = {
-                    Text(stringResource(R.string.masjid_not_in_database_popup))
+                    Text(stringResource(R.string.mosque_not_in_database_popup))
                 }, confirmButton = {
                     TextButton(onClick = {
                         link()
                         showDialog.value = false
                     }) {
-                        Text(stringResource(R.string.open_github))
+                        Text(stringResource(R.string.add_mosque))
                     }
                 }, dismissButton = {
                     TextButton(onClick = { showDialog.value = false }) {
@@ -123,6 +123,6 @@ fun UI(
 @Preview(showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
 fun UIPreview() {
     AutoSilentTheme {
-        UI({}, stringResource(R.string.not_in_masjid), false, {}, rememberNavController())
+        UI({}, stringResource(R.string.not_in_mosque), false, {}, rememberNavController())
     }
 }

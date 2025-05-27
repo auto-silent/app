@@ -9,4 +9,6 @@ object Routes {
     const val FAQ = "faq"
     const val NOTIFICATIONPERMISSION = "notificationPermission"
     const val FEEDBACK = "feedback"
+    const val MOSQUES = "mosques"
+    const val ADDMOSQUES = "addMosques"
 }

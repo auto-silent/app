@@ -21,11 +21,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.itsha123.autosilent.composables.MainScreen
 import com.itsha123.autosilent.composables.permissions.NotificationsPermissionRequestScreen
+import com.itsha123.autosilent.composables.settings.AddMosquesScreen
 import com.itsha123.autosilent.composables.settings.CacheSettingsScreen
 import com.itsha123.autosilent.composables.settings.FAQScreen
 import com.itsha123.autosilent.composables.settings.FeedbackScreen
 import com.itsha123.autosilent.composables.settings.GeneralSettingsScreen
 import com.itsha123.autosilent.composables.settings.HelpScreen
+import com.itsha123.autosilent.composables.settings.MosquesScreen
 import com.itsha123.autosilent.composables.settings.SettingsScreen
 import com.itsha123.autosilent.services.location.BackgroundLocationService
 import com.itsha123.autosilent.singletons.Routes
@@ -113,6 +115,12 @@ class MainActivity : ComponentActivity() {
                     }
                     composable(Routes.FEEDBACK) {
                         FeedbackScreen(this@MainActivity)
+                    }
+                    composable(Routes.MOSQUES) {
+                        MosquesScreen(navController, this@MainActivity)
+                    }
+                    composable(Routes.ADDMOSQUES) {
+                        AddMosquesScreen(this@MainActivity, navController)
                     }
                     composable(Routes.NOTIFICATIONPERMISSION) {
                         val launcher =

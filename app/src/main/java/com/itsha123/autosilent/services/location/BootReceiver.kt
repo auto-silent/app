@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.core.content.ContextCompat.startForegroundService
+import com.itsha123.autosilent.services.location.ServiceIntentProvider.getServiceIntent
 import com.itsha123.autosilent.utilities.permsCheck
 
 class BootReceiver : BroadcastReceiver() {
@@ -13,11 +14,17 @@ class BootReceiver : BroadcastReceiver() {
         if (intent?.action == "android.intent.action.BOOT_COMPLETED") {
             Log.i("backgroundService", "Boot completed received")
             if (permsCheck(context!!)) {
-                val serviceIntent = Intent(context, BackgroundLocationService::class.java)
+                val serviceIntent = getServiceIntent(context)
                 startForegroundService(context, serviceIntent)
             } else {
                 Log.i("backgroundService", "Permissions not granted")
             }
         }
+    }
+}
+
+object ServiceIntentProvider {
+    fun getServiceIntent(context: Context): Intent {
+        return Intent(context, BackgroundLocationService::class.java)
     }
 }

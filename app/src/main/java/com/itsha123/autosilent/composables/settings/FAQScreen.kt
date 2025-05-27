@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -24,18 +25,24 @@ import com.itsha123.autosilent.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FAQScreen(navController: NavController? = null) {
-    Scaffold {
+    Scaffold(topBar = {
+        MediumTopAppBar(
+            colors = TopAppBarDefaults.largeTopAppBarColors(containerColor = MaterialTheme.colorScheme.background),
+            title = { Text(stringResource(R.string.faq_page_title)) },
+            navigationIcon = {
+                IconButton(onClick = {
+                    navController?.popBackStack()
+                }) {
+                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
+                }
+            })
+    }) { innerPadding ->
         Column {
-            MediumTopAppBar(
-                title = { Text(stringResource(R.string.faq_page_title)) },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        navController?.popBackStack()
-                    }) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
-                    }
-                })
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
                 item {
                     Text(
                         text = stringResource(R.string.faq_question_how_to_disable_auto_silent),

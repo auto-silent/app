@@ -20,13 +20,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat.startActivity
+import androidx.core.content.edit
 import androidx.navigation.NavController
 import com.itsha123.autosilent.R
 import com.itsha123.autosilent.composables.permissions.BackgroundLocationPermissionRequestScreen
 import com.itsha123.autosilent.composables.permissions.DNDPermissionRequestScreen
 import com.itsha123.autosilent.composables.permissions.LocationPermissionRequestScreen
 import com.itsha123.autosilent.services.location.BackgroundLocationService
+import com.itsha123.autosilent.services.location.ServiceIntentProvider.getServiceIntent
 import com.itsha123.autosilent.singletons.Routes
 import com.itsha123.autosilent.singletons.Variables.database
 import com.itsha123.autosilent.singletons.Variables.geofence
@@ -78,12 +79,12 @@ fun MainScreen(navController: NavController, context: Context) {
         val launcher =
             rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
                 if (!isGranted && sharedPref.getInt("fineLocationRequests", 0) < 2) {
-                    with(sharedPref.edit()) {
+                    sharedPref.edit {
                         putInt(
                             "fineLocationRequests",
                             sharedPref.getInt("fineLocationRequests", 0) + 1
                         )
-                    }.apply()
+                    }
                 }
                 recompose.value = !recompose.value
             }
@@ -104,12 +105,12 @@ fun MainScreen(navController: NavController, context: Context) {
         val launcher =
             rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
                 if (!isGranted && sharedPref.getInt("backgroundLocationRequests", 0) < 2) {
-                    with(sharedPref.edit()) {
+                    sharedPref.edit {
                         putInt(
                             "backgroundLocationRequests",
                             sharedPref.getInt("backgroundLocationRequests", 0) + 1
                         )
-                    }.apply()
+                    }
                 }
                 recompose.value = !recompose.value
             }
@@ -162,7 +163,7 @@ fun MainScreen(navController: NavController, context: Context) {
         UI(
             {
                 if (isServiceRunning(BackgroundLocationService::class.java, context)) {
-                    context.stopService(Intent(context, BackgroundLocationService::class.java))
+                    context.stopService(getServiceIntent(context))
                     service.value = false
                 } else {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -198,22 +199,18 @@ fun MainScreen(navController: NavController, context: Context) {
                 !service.collectAsState().value -> stringResource(R.string.service_not_running)
                 !location.collectAsState().value -> stringResource(R.string.location_disabled)
                 geofence.collectAsState().value -> stringResource(
-                    R.string.current_masjid_details,
+                    R.string.current_mosque_details,
                     geofenceData!!.name!!,
                     geofenceData!!.address!!
                 )
-                !database.collectAsState().value -> stringResource(R.string.masjid_not_in_database_status)
+
+                !database.collectAsState().value -> stringResource(R.string.mosque_not_in_database_status)
                 !internet.collectAsState().value -> stringResource(R.string.no_internet_no_cache)
-                else -> stringResource(R.string.not_in_masjid)
+                else -> stringResource(R.string.not_in_mosque)
             },
             geofence.collectAsState().value,
             {
-                startActivity(
-                    context, Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse(context.getString(R.string.database_issue_link))
-                    ), null
-                )
+                navController.navigate(Routes.ADDMOSQUES)
             }, navController
         )
     }
