@@ -5,11 +5,10 @@ Auto Silent is an app that automatically mutes your phone when you enter a mosqu
 ## Features
 
 - Set phone to vibrate or silent in a mosque.
-- Keep phone's old ringer state when exiting.
-- Don't change ringer mode when outside mosque.
 - Status notification with turn off button.
 - Add your own mosques (request addition to database).
 - Dark mode.
+- Works offline (after initial download)
 
 ## How to get
 
