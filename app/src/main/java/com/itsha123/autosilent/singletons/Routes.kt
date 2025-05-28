@@ -11,4 +11,5 @@ object Routes {
     const val FEEDBACK = "feedback"
     const val MOSQUES = "mosques"
     const val ADDMOSQUES = "addMosques"
+    const val BATTERYPERMISSION = "batteryPermission"
 }

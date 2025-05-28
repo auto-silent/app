@@ -136,7 +136,7 @@ fun MosquesScreen(navController: NavController? = null, context: Context? = null
                         }
                     }
 
-                    MasjidCard(
+                    MosqueCard(
                         title = request.title,
                         address = request.address,
                         latitude = request.latitude,
@@ -185,7 +185,7 @@ fun MosquesScreen(navController: NavController? = null, context: Context? = null
 }
 
 @Composable
-fun MasjidCard(
+fun MosqueCard(
     title: String,
     address: String,
     latitude: String,
@@ -322,7 +322,7 @@ suspend fun getStatus(context: Context, issueNumber: Int): Int {
             if (!response.isSuccessful) throw Exception("Unexpected code $response")
             val body = response.body?.string() ?: throw Exception("Empty body")
             val json = JSONObject(body)
-            Log.d("MasjidStatus", "Headers: ${response.headers}")
+            Log.d("MosqueStatus", "Headers: ${response.headers}")
             val state = json.getString("state")
             val assigneeExists = !json.isNull("assignee")
 

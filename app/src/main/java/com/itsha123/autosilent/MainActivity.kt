@@ -1,6 +1,7 @@
 package com.itsha123.autosilent
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -20,6 +21,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.itsha123.autosilent.composables.MainScreen
+import com.itsha123.autosilent.composables.permissions.BatteryPermissionRequestScreen
 import com.itsha123.autosilent.composables.permissions.NotificationsPermissionRequestScreen
 import com.itsha123.autosilent.composables.settings.AddMosquesScreen
 import com.itsha123.autosilent.composables.settings.CacheSettingsScreen
@@ -40,6 +42,7 @@ import com.itsha123.autosilent.utilities.permsCheck
 
 class MainActivity : ComponentActivity() {
 
+    @SuppressLint("BatteryLife")
     override fun onCreate(savedInstanceState: Bundle?) {
         val sharedPref = getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
         super.onCreate(savedInstanceState)
@@ -162,6 +165,24 @@ class MainActivity : ComponentActivity() {
                                     }
                                 settingsActivityResultLauncher.launch(intent)
                             }
+                        }
+                    }
+                    composable(Routes.BATTERYPERMISSION) {
+                        val settingsActivityResultLauncher: ActivityResultLauncher<Intent> =
+                            rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                                navController.popBackStack()
+                            }
+                        BatteryPermissionRequestScreen(navController) {
+                            recompose.value = !recompose.value
+                            val intent =
+                                Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                                    data = Uri.fromParts(
+                                        "package",
+                                        this@MainActivity.packageName,
+                                        null
+                                        )
+                                    }
+                                settingsActivityResultLauncher.launch(intent)
                         }
                     }
                 }

@@ -14,10 +14,12 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.SystemClock
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.itsha123.autosilent.R
+import com.itsha123.autosilent.services.persistence.ServiceCheckReceiver
 import com.itsha123.autosilent.singletons.Variables.database
 import com.itsha123.autosilent.singletons.Variables.geofence
 import com.itsha123.autosilent.singletons.Variables.geofenceData
@@ -83,6 +85,17 @@ class BackgroundLocationService : Service() {
             Log.i("backgroundService", "Service stopped due to user preference")
             stopSelf()
         }
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+        val alarmIntent = Intent(this, ServiceCheckReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            this, 0, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        alarmManager.setRepeating(
+            android.app.AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            SystemClock.elapsedRealtime(),
+            60000,
+            pendingIntent
+        )
         handler.post(runnable)
         return START_REDELIVER_INTENT
     }

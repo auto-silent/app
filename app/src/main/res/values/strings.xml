@@ -73,4 +73,8 @@
     <string name="add_mosque">Add Mosque</string>
     <string name="open_request_in_github">Open request in GitHub?</string>
     <string name="rate_limit_exceeded_snackbar_message">Rate limited. Tap request to open in GitHub or try again later.</string>
+    <string name="battery_permission_rationale">Please disable battery optimizations for the app to ensure it always runs in the background.</string>
+    <string name="are_you_sure">Are you sure?</string>
+    <string name="sure">Yes, I\'m sure</string>
+    <string name="battery_permission_dialog_text">It is HIGHLY recommended to disable battery optimization. Otherwise the app may randomly stop working.</string>
 </resources>

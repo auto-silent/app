@@ -1,12 +1,16 @@
 package com.itsha123.autosilent.composables
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.app.AlarmManager
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
@@ -28,6 +32,7 @@ import com.itsha123.autosilent.composables.permissions.DNDPermissionRequestScree
 import com.itsha123.autosilent.composables.permissions.LocationPermissionRequestScreen
 import com.itsha123.autosilent.services.location.BackgroundLocationService
 import com.itsha123.autosilent.services.location.ServiceIntentProvider.getServiceIntent
+import com.itsha123.autosilent.services.persistence.ServiceCheckReceiver
 import com.itsha123.autosilent.singletons.Routes
 import com.itsha123.autosilent.singletons.Variables.database
 import com.itsha123.autosilent.singletons.Variables.geofence
@@ -39,7 +44,7 @@ import com.itsha123.autosilent.singletons.Variables.service
 import com.itsha123.autosilent.utilities.isServiceRunning
 import com.itsha123.autosilent.utilities.permsCheck
 
-
+@SuppressLint("BatteryLife")
 @Composable
 fun MainScreen(navController: NavController, context: Context) {
     val showDialog = remember { mutableStateOf(false) }
@@ -141,6 +146,10 @@ fun MainScreen(navController: NavController, context: Context) {
                 ) {
                     navController.navigate(Routes.NOTIFICATIONPERMISSION)
                 }
+                val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+                if (!powerManager.isIgnoringBatteryOptimizations(context.packageName)) {
+                    navController.navigate(Routes.BATTERYPERMISSION)
+                }
                 if (!isServiceRunning(BackgroundLocationService::class.java, context)) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         context.startForegroundService(
@@ -163,6 +172,16 @@ fun MainScreen(navController: NavController, context: Context) {
         UI(
             {
                 if (isServiceRunning(BackgroundLocationService::class.java, context)) {
+                    val alarmManager =
+                        context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                    val alarmIntent = Intent(context, ServiceCheckReceiver::class.java)
+                    val pendingIntent = PendingIntent.getBroadcast(
+                        context,
+                        0,
+                        alarmIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                    )
+                    alarmManager.cancel(pendingIntent)
                     context.stopService(getServiceIntent(context))
                     service.value = false
                 } else {
