@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.Help
+import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material.icons.rounded.Mosque
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -71,6 +72,15 @@ fun SettingsScreen(navController: NavController? = null, context: Context? = nul
                         navigateTo = Routes.CACHESETTINGS
                     )
                 }
+            item {
+                SettingsItemIconDesc(
+                    title = stringResource(R.string.advanced),
+                    description = stringResource(R.string.advanced_settings_desc),
+                    icon = Icons.Rounded.Build,
+                    navController = navController,
+                    navigateTo = Routes.ADVANCEDSETTINGS
+                )
+            }
                 item {
                     SettingsItemIconDesc(
                         title = stringResource(R.string.help_settings_title),

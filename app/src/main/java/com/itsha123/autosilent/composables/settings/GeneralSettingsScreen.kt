@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.content.edit
 import androidx.navigation.NavController
 import com.itsha123.autosilent.R
 import com.itsha123.autosilent.composables.settings.components.SettingsItemDropdown
@@ -63,9 +64,8 @@ fun GeneralSettingsScreen(navController: NavController? = null, context: Context
                     SettingsItemSwitch(stringResource(R.string.app_toggle_title), context, {
                         var enabledChecked = sharedPref?.getBoolean("enabledChecked", true)
                         if (sharedPref != null) {
-                            with(sharedPref.edit()) {
+                            sharedPref.edit {
                                 putBoolean("enabledChecked", !enabledChecked!!)
-                                apply()
                             }
                             enabledChecked = !enabledChecked!!
                         }
@@ -115,9 +115,8 @@ fun GeneralSettingsScreen(navController: NavController? = null, context: Context
                     ) {
                         var vibrateChecked = sharedPref?.getBoolean("vibrateChecked", false)
                         if (sharedPref != null) {
-                            with(sharedPref.edit()) {
+                            sharedPref.edit {
                                 putBoolean("vibrateChecked", !vibrateChecked!!)
-                                apply()
                             }
                             vibrateChecked = !vibrateChecked!!
                             if (vibrateChecked == true) {

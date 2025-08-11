@@ -2,7 +2,6 @@ package com.itsha123.autosilent
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -24,6 +23,7 @@ import com.itsha123.autosilent.composables.MainScreen
 import com.itsha123.autosilent.composables.permissions.BatteryPermissionRequestScreen
 import com.itsha123.autosilent.composables.permissions.NotificationsPermissionRequestScreen
 import com.itsha123.autosilent.composables.settings.AddMosquesScreen
+import com.itsha123.autosilent.composables.settings.AdvancedSettingsScreen
 import com.itsha123.autosilent.composables.settings.CacheSettingsScreen
 import com.itsha123.autosilent.composables.settings.FAQScreen
 import com.itsha123.autosilent.composables.settings.FeedbackScreen
@@ -44,7 +44,7 @@ class MainActivity : ComponentActivity() {
 
     @SuppressLint("BatteryLife")
     override fun onCreate(savedInstanceState: Bundle?) {
-        val sharedPref = getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
+        val sharedPref = getSharedPreferences("myPrefs", MODE_PRIVATE)
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         if (permsCheck(this)) {
@@ -57,9 +57,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
         } else {
-            with(sharedPref.edit()) {
+            sharedPref.edit {
                 putBoolean("firstRun", true)
-                apply()
             }
         }
         if (isServiceRunning(BackgroundLocationService::class.java, this)) {
@@ -124,6 +123,9 @@ class MainActivity : ComponentActivity() {
                     }
                     composable(Routes.ADDMOSQUES) {
                         AddMosquesScreen(this@MainActivity, navController)
+                    }
+                    composable(Routes.ADVANCEDSETTINGS) {
+                        AdvancedSettingsScreen(navController, this@MainActivity)
                     }
                     composable(Routes.NOTIFICATIONPERMISSION) {
                         val launcher =
@@ -202,6 +204,3 @@ class MainActivity : ComponentActivity() {
         recompose.value = !recompose.value
     }
 }
-
-
-

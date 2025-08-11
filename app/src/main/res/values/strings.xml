@@ -77,4 +77,6 @@
     <string name="are_you_sure">Are you sure?</string>
     <string name="sure">Yes, I\'m sure</string>
     <string name="battery_permission_dialog_text">It is HIGHLY recommended to disable battery optimization. Otherwise the app may randomly stop working.</string>
+    <string name="advanced">Advanced</string>
+    <string name="advanced_settings_desc">Advanced app settings</string>
 </resources>

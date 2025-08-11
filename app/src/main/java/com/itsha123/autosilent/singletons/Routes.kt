@@ -12,4 +12,5 @@ object Routes {
     const val MOSQUES = "mosques"
     const val ADDMOSQUES = "addMosques"
     const val BATTERYPERMISSION = "batteryPermission"
+    const val ADVANCEDSETTINGS = "advancedSettings"
 }

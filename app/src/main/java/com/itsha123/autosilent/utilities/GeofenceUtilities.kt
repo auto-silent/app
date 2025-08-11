@@ -119,18 +119,19 @@ fun fetchLocationFromInternet(userLat: Double, userLong: Double, context: Contex
             while (csvReader.readNext().also { nextLine = it } != null && !geofence) {
                 if (nextLine!!.size == 5) {
                     locationData = LocationData(
-                        nextLine!![n(1)],
-                        nextLine!![n(2)],
-                        nextLine!![n(3)].toDoubleOrNull() ?: 0.0,
-                        nextLine!![n(4)].toDoubleOrNull() ?: 0.0,
-                        nextLine!![n(5)].toDoubleOrNull() ?: 0.0
+                        nextLine[n(1)],
+                        nextLine[n(2)],
+                        nextLine[n(3)].toDoubleOrNull() ?: 0.0,
+                        nextLine[n(4)].toDoubleOrNull() ?: 0.0,
+                        nextLine[n(5)].toDoubleOrNull() ?: 0.0
                     )
                     geofence = isUserInGeofence(
                         userLat,
                         userLong,
                         locationData!!.latitude,
                         locationData!!.longitude,
-                        locationData!!.radius
+                        locationData!!.radius,
+                        context
                     )
                 }
             }
@@ -150,18 +151,19 @@ fun fetchLocationFromInternet(userLat: Double, userLong: Double, context: Contex
             while (csvReader.readNext().also { nextLine = it } != null && !geofence) {
                 if (nextLine!!.size == 5) {
                     locationData = LocationData(
-                        nextLine!![n(1)],
-                        nextLine!![n(2)],
-                        nextLine!![n(3)].toDoubleOrNull() ?: 0.0,
-                        nextLine!![n(4)].toDoubleOrNull() ?: 0.0,
-                        nextLine!![n(5)].toDoubleOrNull() ?: 0.0
+                        nextLine[n(1)],
+                        nextLine[n(2)],
+                        nextLine[n(3)].toDoubleOrNull() ?: 0.0,
+                        nextLine[n(4)].toDoubleOrNull() ?: 0.0,
+                        nextLine[n(5)].toDoubleOrNull() ?: 0.0
                     )
                     geofence = isUserInGeofence(
                         userLat,
                         userLong,
                         locationData!!.latitude,
                         locationData!!.longitude,
-                        locationData!!.radius
+                        locationData!!.radius,
+                        context
                     )
                 }
             }
@@ -200,18 +202,19 @@ fun fetchLocationFromInternet(userLat: Double, userLong: Double, context: Contex
                 while (csvReader.readNext().also { nextLine = it } != null && !geofence) {
                     if (nextLine!!.size == 5) {
                         locationData = LocationData(
-                            nextLine!![n(1)],
-                            nextLine!![n(2)],
-                            nextLine!![n(3)].toDoubleOrNull() ?: 0.0,
-                            nextLine!![n(4)].toDoubleOrNull() ?: 0.0,
-                            nextLine!![n(5)].toDoubleOrNull() ?: 0.0
+                            nextLine[n(1)],
+                            nextLine[n(2)],
+                            nextLine[n(3)].toDoubleOrNull() ?: 0.0,
+                            nextLine[n(4)].toDoubleOrNull() ?: 0.0,
+                            nextLine[n(5)].toDoubleOrNull() ?: 0.0
                         )
                         geofence = isUserInGeofence(
                             userLat,
                             userLong,
                             locationData!!.latitude,
                             locationData!!.longitude,
-                            locationData!!.radius
+                            locationData!!.radius,
+                            context
                         )
                     }
                 }
@@ -241,12 +244,16 @@ fun isUserInGeofence(
     userLng: Double,
     geofenceLat: Double,
     geofenceLng: Double,
-    geofenceRadius: Double
+    geofenceRadius: Double,
+    context: Context
 ): Boolean {
-    Log.d(
-        "geofenceEvent",
-        "userLat: $userLat, userLng: $userLng, geofenceLat: $geofenceLat, geofenceLng: $geofenceLng, geofenceRadius: $geofenceRadius"
-    )
+    val sharedPref = context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
+    if (sharedPref.getBoolean("advancedChecked", false)) {
+        Log.d(
+            "geofenceEvent",
+            "userLat: $userLat, userLng: $userLng, geofenceLat: $geofenceLat, geofenceLng: $geofenceLng, geofenceRadius: $geofenceRadius"
+        )
+    }
     val earthRadius = 6371
 
     val latDistance = Math.toRadians(geofenceLat - userLat)
