@@ -14,10 +14,12 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -82,6 +84,7 @@ fun AdvancedSettingsScreen(navController: NavController? = null, context: Contex
     Scaffold(
         topBar = {
             MediumTopAppBar(
+                colors = TopAppBarDefaults.largeTopAppBarColors(containerColor = MaterialTheme.colorScheme.background),
                 title = { Text(stringResource(R.string.advanced)) },
                 navigationIcon = {
                     IconButton(onClick = { navController?.popBackStack() }) {
@@ -91,6 +94,7 @@ fun AdvancedSettingsScreen(navController: NavController? = null, context: Contex
             )
         }
     ) { innerPadding ->
+        var recompose by remember { mutableStateOf(false) }
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -117,6 +121,7 @@ fun AdvancedSettingsScreen(navController: NavController? = null, context: Contex
                                 showDialog = true
                             }
                         }
+                        recompose = !recompose
                     }, "advancedChecked", false
                 )
             }
