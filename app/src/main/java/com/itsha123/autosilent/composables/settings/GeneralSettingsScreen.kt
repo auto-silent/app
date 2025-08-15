@@ -20,6 +20,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,6 +42,7 @@ import com.itsha123.autosilent.utilities.isServiceRunning
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GeneralSettingsScreen(navController: NavController? = null, context: Context? = null) {
+    val checked = remember { mutableStateOf(false) }
     Scaffold(topBar = {
         MediumTopAppBar(
             colors = TopAppBarDefaults.largeTopAppBarColors(containerColor = MaterialTheme.colorScheme.background),
@@ -103,7 +106,7 @@ fun GeneralSettingsScreen(navController: NavController? = null, context: Context
                                 getServiceIntent(context)
                             )
                         }
-                    }, "enabledChecked", true)
+                    }, "enabledChecked", true, checked)
                 }
                 item {
                     SettingsItemDropdown(

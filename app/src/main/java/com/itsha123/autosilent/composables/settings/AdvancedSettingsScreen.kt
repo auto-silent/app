@@ -39,6 +39,7 @@ import com.itsha123.autosilent.composables.settings.components.SettingsItemSwitc
 fun AdvancedSettingsScreen(navController: NavController? = null, context: Context? = null) {
     var showDialog by remember { mutableStateOf(false) }
     var dontShowAgain by remember { mutableStateOf(false) }
+    val checked = remember { mutableStateOf(false) }
 
     val sharedPref = context?.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
 
@@ -68,6 +69,7 @@ fun AdvancedSettingsScreen(navController: NavController? = null, context: Contex
                             }
                         }
                         showDialog = false
+                        checked.value = true
                     }
                 ) {
                     Text("Enable")
@@ -94,7 +96,6 @@ fun AdvancedSettingsScreen(navController: NavController? = null, context: Contex
             )
         }
     ) { innerPadding ->
-        var recompose by remember { mutableStateOf(false) }
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -121,8 +122,7 @@ fun AdvancedSettingsScreen(navController: NavController? = null, context: Contex
                                 showDialog = true
                             }
                         }
-                        recompose = !recompose
-                    }, "advancedChecked", false
+                    }, "advancedChecked", false, checked
                 )
             }
         }

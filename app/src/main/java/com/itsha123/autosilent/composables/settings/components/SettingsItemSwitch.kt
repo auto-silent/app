@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,13 +33,13 @@ fun SettingsItemSwitch(
     context: Context? = null,
     onCheck: () -> Unit,
     syncedVariable: String,
-    defValue: Boolean
+    defValue: Boolean,
+    isChecked: MutableState<Boolean>
 ) {
     val sharedPref = context?.getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
     var clicked by remember { mutableStateOf(false) }
-    var isChecked by remember { mutableStateOf(true) }// State to manage Switch checked state
     if (sharedPref != null) {
-        isChecked = sharedPref.getBoolean(syncedVariable, defValue)
+        isChecked.value = sharedPref.getBoolean(syncedVariable, defValue)
     }
     val scale = animateFloatAsState(targetValue = if (clicked) 0.95f else 1f)
 
@@ -62,9 +63,9 @@ fun SettingsItemSwitch(
         Spacer(modifier = Modifier.weight(1f)) // Spacer with flexible weight to push the Switch to the right
         Switch(
             colors = SwitchDefaults.colors(checkedTrackColor = MaterialTheme.colorScheme.primary),
-            checked = isChecked,
+            checked = isChecked.value,
             onCheckedChange = {
-            isChecked = it
+                isChecked.value = it
             onCheck()
         }) // Update isChecked state on change
     }
