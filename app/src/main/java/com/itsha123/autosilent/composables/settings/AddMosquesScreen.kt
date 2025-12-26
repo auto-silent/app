@@ -51,17 +51,17 @@ fun AddMosquesScreen(context: Context? = null, navController: NavController? = n
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var showDialog by remember { mutableStateOf(false) }
+    var name by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
+    var latitude by remember { mutableStateOf("") }
+    var longitude by remember { mutableStateOf("") }
+    var allFilled by remember { mutableStateOf(true) }
     Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { innerPadding ->
         Column(
             Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
-            var name by remember { mutableStateOf("") }
-            var address by remember { mutableStateOf("") }
-            var latitude by remember { mutableStateOf("") }
-            var longitude by remember { mutableStateOf("") }
-            var allFilled by remember { mutableStateOf(true) }
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
