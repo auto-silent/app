@@ -159,6 +159,16 @@ fun AddMosquesScreen(context: Context? = null, navController: NavController? = n
             Column(verticalArrangement = Arrangement.Bottom, modifier = Modifier.fillMaxSize()) {
                 Button(
                     onClick = {
+                        if (name.isEmpty() || address.isEmpty() || latitude.isEmpty() || longitude.isEmpty()) {
+                            allFilled = false
+                            return@Button
+                        }
+                        if (!latitude.matches(Regex("^-?\\d+\\.\\d{5,}\$")) || !longitude.matches(
+                                Regex("^-?\\d+\\.\\d{5,}\$")
+                            )
+                        ) {
+                            return@Button
+                        }
                         if (System.currentTimeMillis() - sharedPref!!.getLong(
                                 "mosqueRequestTimestamp",
                                 0
@@ -174,16 +184,6 @@ fun AddMosquesScreen(context: Context? = null, navController: NavController? = n
                                     message = "Wait $secondsRemaining seconds until you can submit another request"
                                 )
                             }
-                            return@Button
-                        }
-                        if (name.isEmpty() || address.isEmpty() || latitude.isEmpty() || longitude.isEmpty()) {
-                            allFilled = false
-                            return@Button
-                        }
-                        if (!latitude.matches(Regex("^-?\\d+\\.\\d{5,}\$")) || !longitude.matches(
-                                Regex("^-?\\d+\\.\\d{5,}\$")
-                            )
-                        ) {
                             return@Button
                         }
                         GlobalScope.launch(Dispatchers.IO) {
