@@ -51,17 +51,17 @@ fun AddMosquesScreen(context: Context? = null, navController: NavController? = n
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var showDialog by remember { mutableStateOf(false) }
+    var name by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
+    var latitude by remember { mutableStateOf("") }
+    var longitude by remember { mutableStateOf("") }
+    var allFilled by remember { mutableStateOf(true) }
     Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { innerPadding ->
         Column(
             Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
-            var name by remember { mutableStateOf("") }
-            var address by remember { mutableStateOf("") }
-            var latitude by remember { mutableStateOf("") }
-            var longitude by remember { mutableStateOf("") }
-            var allFilled by remember { mutableStateOf(true) }
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
@@ -159,6 +159,16 @@ fun AddMosquesScreen(context: Context? = null, navController: NavController? = n
             Column(verticalArrangement = Arrangement.Bottom, modifier = Modifier.fillMaxSize()) {
                 Button(
                     onClick = {
+                        if (name.isEmpty() || address.isEmpty() || latitude.isEmpty() || longitude.isEmpty()) {
+                            allFilled = false
+                            return@Button
+                        }
+                        if (!latitude.matches(Regex("^-?\\d+\\.\\d{5,}\$")) || !longitude.matches(
+                                Regex("^-?\\d+\\.\\d{5,}\$")
+                            )
+                        ) {
+                            return@Button
+                        }
                         if (System.currentTimeMillis() - sharedPref!!.getLong(
                                 "mosqueRequestTimestamp",
                                 0
@@ -174,16 +184,6 @@ fun AddMosquesScreen(context: Context? = null, navController: NavController? = n
                                     message = "Wait $secondsRemaining seconds until you can submit another request"
                                 )
                             }
-                            return@Button
-                        }
-                        if (name.isEmpty() || address.isEmpty() || latitude.isEmpty() || longitude.isEmpty()) {
-                            allFilled = false
-                            return@Button
-                        }
-                        if (!latitude.matches(Regex("^-?\\d+\\.\\d{5,}\$")) || !longitude.matches(
-                                Regex("^-?\\d+\\.\\d{5,}\$")
-                            )
-                        ) {
                             return@Button
                         }
                         GlobalScope.launch(Dispatchers.IO) {
@@ -302,6 +302,11 @@ fun AddMosquesScreen(context: Context? = null, navController: NavController? = n
                 confirmButton = {
                     TextButton(onClick = {
                         showDialog = false
+                        name = ""
+                        address = ""
+                        latitude = ""
+                        longitude = ""
+                        allFilled = true
                     }) { Text(stringResource(R.string.continue_text)) }
                 },
                 dismissButton = {
