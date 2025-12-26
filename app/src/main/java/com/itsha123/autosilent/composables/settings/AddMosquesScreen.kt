@@ -196,7 +196,8 @@ fun AddMosquesScreen(context: Context? = null, navController: NavController? = n
                             val json = """
                                 {
                                     "title": "Add $name",
-                                    "body": "### Add $name\n**Address:** $address\n**Latitude:** $latitude\n**Longitude:** $longitude"
+                                    "body": "### Add $name\n**Address:** $address\n**Latitude:** $latitude\n**Longitude:** $longitude",
+                                    "labels": ["enhancement"]
                                 }
                             """
                             val body = json.toRequestBody(mediaType)
