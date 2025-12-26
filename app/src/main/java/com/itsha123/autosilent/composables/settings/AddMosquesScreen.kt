@@ -262,7 +262,7 @@ fun AddMosquesScreen(context: Context? = null, navController: NavController? = n
                                                 snackbarHostState.currentSnackbarData?.dismiss()
                                                 snackbarHostState.showSnackbar(context.getString(R.string.no_internet_snackbar_message))
                                             }
-                                        } else if (response.code == 429) {
+                                        } else if (response.code == 409) {
                                             val errorBody = response.body?.string()
                                             if (errorBody != null) {
                                                 val errorJson = JSONObject(errorBody)
