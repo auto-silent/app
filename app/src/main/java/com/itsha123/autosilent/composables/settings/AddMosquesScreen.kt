@@ -302,6 +302,11 @@ fun AddMosquesScreen(context: Context? = null, navController: NavController? = n
                 confirmButton = {
                     TextButton(onClick = {
                         showDialog = false
+                        name = ""
+                        address = ""
+                        latitude = ""
+                        longitude = ""
+                        allFilled = true
                     }) { Text(stringResource(R.string.continue_text)) }
                 },
                 dismissButton = {
