@@ -262,6 +262,33 @@ fun AddMosquesScreen(context: Context? = null, navController: NavController? = n
                                                 snackbarHostState.currentSnackbarData?.dismiss()
                                                 snackbarHostState.showSnackbar(context.getString(R.string.no_internet_snackbar_message))
                                             }
+                                        } else if (response.code == 409) {
+                                            val errorBody = response.body?.string()
+                                            if (errorBody != null) {
+                                                val errorJson = JSONObject(errorBody)
+                                                val errorMessage = errorJson.optString("message", "")
+                                                if (errorMessage == "Duplicate issue detected.") {
+                                                    scope.launch {
+                                                        snackbarHostState.currentSnackbarData?.dismiss()
+                                                        snackbarHostState.showSnackbar(context.getString(R.string.duplicate_request_message))
+                                                    }
+                                                } else if (errorMessage == "Entry already in database.") {
+                                                    scope.launch {
+                                                        snackbarHostState.currentSnackbarData?.dismiss()
+                                                        snackbarHostState.showSnackbar(context.getString(R.string.mosque_already_in_database_message))
+                                                    }
+                                                } else {
+                                                    scope.launch {
+                                                        snackbarHostState.currentSnackbarData?.dismiss()
+                                                        snackbarHostState.showSnackbar(context.getString(R.string.something_went_wrong))
+                                                    }
+                                                }
+                                            } else {
+                                                scope.launch {
+                                                    snackbarHostState.currentSnackbarData?.dismiss()
+                                                    snackbarHostState.showSnackbar(context.getString(R.string.something_went_wrong))
+                                                }
+                                            }
                                         } else {
                                             scope.launch {
                                                 snackbarHostState.currentSnackbarData?.dismiss()
