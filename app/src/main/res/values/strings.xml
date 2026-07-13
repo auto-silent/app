@@ -79,4 +79,6 @@
     <string name="battery_permission_dialog_text">It is HIGHLY recommended to disable battery optimization. Otherwise the app may randomly stop working.</string>
     <string name="advanced">Advanced</string>
     <string name="advanced_settings_desc">Advanced app settings</string>
+    <string name="duplicate_request_message">There is already an existing request for this mosque.</string>
+    <string name="mosque_already_in_database_message">This mosque is already added in the database.</string>
 </resources>
